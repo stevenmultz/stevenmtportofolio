@@ -50,7 +50,7 @@ export default function StartPage({ onEnter }: StartPageProps) {
           animate={{ opacity: 1, transition: { duration: 1, delay: 0.4 } }}
           className="mt-2 text-gray-400"
         >
-          // SOFTWARE ENGINEER
+          {"// SOFTWARE ENGINEER"}
         </motion.p>
       </div>
 
