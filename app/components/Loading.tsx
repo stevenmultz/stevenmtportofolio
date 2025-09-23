@@ -9,9 +9,9 @@ const bootSequence = `
 INITIATING KERNEL V5.8.1-MULATAMA
 MEMORY CHECK: 2048MB RAM... OK
 DETECTING HARDWARE...
- > CPU: INTEL CORE I9 @ 3.60GHZ
- > GPU: NVIDIA RTX 4090
- > STORAGE: 1TB NVME SSD
+  > CPU: INTEL CORE I9 @ 3.60GHZ
+  > GPU: NVIDIA RTX 4090
+  > STORAGE: 1TB NVME SSD
 LOADING ASSETS... [||||||||||||||||||||] 100%
 DECRYPTING DATA... COMPLETE
 
@@ -32,30 +32,41 @@ export default function Loading() {
         setTimeout(type, 10); // Kecepatan mengetik (lebih cepat)
       } else {
         // Hentikan kedipan saat selesai untuk kursor solid
-        setShowCursor(true); 
+        setShowCursor(false); 
       }
     };
     type();
+
+    // Pastikan kursor berkedip lagi setelah selesai mengetik
+    const blinkInterval = setInterval(() => {
+      setShowCursor(prev => !prev);
+    }, 800); // Kecepatan kedip kursor
+
+    return () => clearInterval(blinkInterval);
   }, []);
 
   return (
     <motion.div
       exit={{ opacity: 0, transition: { duration: 0.5, delay: 0.5 } }}
+      // Optimasi untuk mobile: menggunakan p-4 (default) dan md:p-8
       className="fixed inset-0 z-50 flex items-start justify-start bg-black p-4 md:p-8 overflow-hidden"
     >
-      {/* Gunakan tag <pre> untuk menjaga format teks dan font monospace */}
       <pre 
-        className="text-sm md:text-base font-normal text-green-400"
+        // Menggunakan text-sm (default) untuk mobile dan md:text-base untuk desktop
+        // Gunakan `leading-snug` untuk jarak antar baris yang lebih rapat
+        className="text-sm md:text-base font-normal text-green-400 leading-snug"
         style={{ fontFamily: "'Roboto Mono', monospace" }}
       >
         {log}
         {/* Kursor yang berkedip */}
         <motion.span
+          // Animasi kursor hanya jika showCursor bernilai true
           animate={{ opacity: showCursor ? [0, 1, 0] : 1 }}
           transition={{ duration: 0.8, repeat: Infinity }}
-          className="bg-green-400 w-3 h-5 inline-block"
+          // Ukuran kursor disesuaikan dengan ukuran teks
+          className="bg-green-400 w-2 h-4 md:w-3 md:h-5 inline-block"
         >
-          &nbsp; {/* Karakter spasi agar blok terlihat */}
+          &nbsp;
         </motion.span>
       </pre>
     </motion.div>
