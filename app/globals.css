@@ -1,8 +1,12 @@
+/* app/globals.css */
 @import "tailwindcss";
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  /* Tambahkan warna gradien thermal */
+  --thermal-gradient-light: linear-gradient(270deg, #FF4B2B, #FF9800, #FFC107); /* Oranye ke Kuning */
+  --thermal-gradient-dark: linear-gradient(270deg, #8B0000, #DC143C, #FF4500); /* Merah gelap ke OrangeRed */
 }
 
 @theme inline {
@@ -20,7 +24,37 @@
 }
 
 body {
-  background: var(--background);
+  /* Terapkan gradien thermal sebagai latar belakang utama */
+  background: var(--thermal-gradient-light); /* Default light mode */
+  background-size: 300% 300%;
+  animation: thermal-flow 25s ease-in-out infinite alternate;
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  transition: background-position 0.5s ease-in-out; /* Transisi halus untuk gradien */
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background: var(--thermal-gradient-dark); /* Dark mode gradient */
+    background-size: 300% 300%;
+    animation: thermal-flow 25s ease-in-out infinite alternate;
+    color: var(--foreground);
+  }
+}
+
+/* Tambahan: Pastikan foreground-rgb Anda didefinisikan jika ingin menggunakan rgba() */
+:root {
+    --foreground-rgb-light: 23, 23, 23; /* RGB untuk #171717 */
+    --foreground-rgb-dark: 237, 237, 237; /* RGB untuk #ededed */
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --foreground-rgb: var(--foreground-rgb-dark);
+    }
+}
+@media (prefers-color-scheme: light) {
+    :root {
+        --foreground-rgb: var(--foreground-rgb-light);
+    }
 }
