@@ -1,94 +1,376 @@
-// app/components/Homepage.tsx
+// app/components/HomePage.tsx
 'use client';
 
-import { motion, useMotionValue, useSpring, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 
-const projects = [
-  { title: "Project Alpha", type: "Web Application", year: "2025" },
-  { title: "Concept Beta", type: "Interactive UI/UX", year: "2025" },
-  { title: "Experiment Gamma", type: "3D & Motion", year: "2024" },
-  { title: "Archive Delta", type: "Static Site", year: "2023" },
+// Define the type for a single project and certificate object
+interface Project {
+  title: string;
+  type: string;
+  year: string;
+  status: string;
+  webDeveloper: string;
+  uiUxDesigner: string;
+  description: string;
+}
+
+interface Certificate {
+  name: string;
+  institution: string;
+  year: string;
+}
+
+// Data untuk proyek, sertifikasi, dan profil
+const projects: Project[] = [
+  {
+    title: "Gohte Architects",
+    type: "Website Development",
+    year: "2025",
+    status: "Completed",
+    webDeveloper: "Jane Doe",
+    uiUxDesigner: "John Smith",
+    description: "Gohte Architects adalah studio arsitektur terkemuka yang berfokus pada desain berkelanjutan. Proyek ini melibatkan pembuatan situs web portofolio yang menampilkan karya-karya mereka dengan galeri visual yang interaktif dan modern."
+  },
+  {
+    title: "Dama Studio",
+    type: "Website Development",
+    year: "2025",
+    status: "In Progress",
+    webDeveloper: "Jane Doe",
+    uiUxDesigner: "Alice Johnson",
+    description: "Dama Studio adalah studio seni dan desain. Kami sedang mengembangkan situs web e-commerce untuk menjual produk-produk seni mereka, dengan integrasi keranjang belanja yang mulus dan halaman produk yang elegan."
+  },
+  {
+    title: "Hutama Maju Sukses",
+    type: "Website Development",
+    year: "2024",
+    status: "Completed",
+    webDeveloper: "Bob Williams",
+    uiUxDesigner: "John Smith",
+    description: "Sebuah situs web perusahaan untuk Hutama Maju Sukses, perusahaan manufaktur terkemuka. Fokus proyek ini adalah pada presentasi layanan dan portofolio produk mereka secara profesional dan informatif."
+  },
+  {
+    title: "Archive Delta",
+    type: "Static Site",
+    year: "2023",
+    status: "Completed",
+    webDeveloper: "Bob Williams",
+    uiUxDesigner: "Alice Johnson",
+    description: "Archive Delta adalah sebuah arsip digital untuk proyek-proyek seni dan sejarah. Situs statis ini dioptimalkan untuk kecepatan dan aksesibilitas, menyajikan koleksi data yang terorganisir dengan baik."
+  },
+  {
+    title: "EcoTech Solutions",
+    type: "Web Application",
+    year: "2024",
+    status: "Completed",
+    webDeveloper: "Alice Johnson",
+    uiUxDesigner: "John Smith",
+    description: "Sebuah aplikasi web inovatif untuk memonitor data lingkungan. Pengguna dapat melacak konsumsi energi dan emisi karbon mereka melalui dasbor interaktif yang intuitif."
+  },
+  {
+    title: "Aura Creative",
+    type: "E-commerce Site",
+    year: "2025",
+    status: "In Progress",
+    webDeveloper: "Bob Williams",
+    uiUxDesigner: "Alice Johnson",
+    description: "Aura Creative berfokus pada produk-produk kecantikan dan gaya hidup. Proyek ini membangun platform e-commerce yang menarik, dengan fitur rekomendasi produk dan ulasan pelanggan."
+  },
+  {
+    title: "Future Labs",
+    type: "Research Portal",
+    year: "2024",
+    status: "Completed",
+    webDeveloper: "Jane Doe",
+    uiUxDesigner: "Bob Williams",
+    description: "Portal penelitian untuk komunitas ilmiah. Aplikasi ini menyediakan alat untuk berbagi publikasi, data, dan berkolaborasi dalam proyek-proyek penelitian, dengan antarmuka yang bersih dan mudah digunakan."
+  },
+  {
+    title: "Pixel Perfect",
+    type: "Agency Website",
+    year: "2023",
+    status: "Completed",
+    webDeveloper: "John Smith",
+    uiUxDesigner: "Jane Doe",
+    description: "Situs web agensi kreatif yang menampilkan portofolio dan layanan mereka. Fokus desainnya adalah pada tipografi yang kuat dan tata letak yang minimalis untuk menyoroti konten visual."
+  },
 ];
 
+const certificates: Certificate[] = [
+  { name: "Certified Web Developer", institution: "Google", year: "2024" },
+  { name: "Advanced UX/UI Design", institution: "Coursera", year: "2023" },
+  { name: "ReactJS Professional", institution: "FreeCodeCamp", year: "2023" },
+];
+
+const contactDetails = `
+  Email: hello@yourwebsite.com
+  LinkedIn: linkedin.com/in/yourprofile
+  Twitter: twitter.com/yourhandle
+`;
+
+const itemsPerPage = 3;
+
 export default function Homepage() {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  
-  // Posisi mouse untuk diikuti oleh kotak detail
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
+  const [activeSection, setActiveSection] = useState('projects');
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [selectedCertificate, setSelectedCertificate] = useState<Certificate | null>(null);
+  const [page, setPage] = useState(0);
 
-  // Efek pegas untuk gerakan yang lebih halus
-  const smoothConfig = { damping: 25, stiffness: 300, mass: 0.5 };
-  const smoothMouseX = useSpring(mouseX, smoothConfig);
-  const smoothMouseY = useSpring(mouseY, smoothConfig);
+  const startIndex = page * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const totalPages = Math.ceil(projects.length / itemsPerPage);
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
-    mouseX.set(e.clientX);
-    mouseY.set(e.clientY);
+  const handleNext = () => {
+    setPage((prevPage) => (prevPage + 1) % totalPages);
   };
+
+  const handlePrev = () => {
+    setPage((prevPage) => (prevPage - 1 + totalPages) % totalPages);
+  };
+
+  const handleProjectClick = (project: Project) => {
+    setSelectedProject(project);
+  };
+
+  const handleCertificateClick = (certificate: Certificate) => {
+    setSelectedCertificate(certificate);
+  };
+
+  const navItems = [
+    { name: 'Projects', id: 'projects' },
+    { name: 'Certificates', id: 'certificates' },
+    { name: 'Contact', id: 'contact' },
+  ];
 
   return (
     <motion.main
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, transition: { duration: 0.5 } }}
-      className="min-h-screen w-full bg-black text-white p-8 md:p-16"
+      className="min-h-screen w-full bg-black text-white p-8 md:p-16 max-h-screen overflow-hidden"
       style={{ fontFamily: "'Roboto Mono', monospace" }}
-      onMouseMove={handleMouseMove} // Lacak mouse di seluruh halaman
     >
-      {/* Kotak Detail yang Mengikuti Kursor */}
+      <div className="max-w-7xl mx-auto">
+        {/* Header Navigasi */}
+        <header className="flex justify-between items-center mb-12 border-b border-gray-800 pb-4">
+          <h1 className="text-2xl">PORTOFOLIO</h1>
+          <nav>
+            <ul className="flex space-x-8">
+              {navItems.map((item) => (
+                <li key={item.id}>
+                  <button
+                    onClick={() => setActiveSection(item.id)}
+                    className={`group relative inline-block text-xl transition-colors duration-300 ${
+                      activeSection === item.id ? 'text-green-400' : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    {item.name}
+                    <motion.div
+                      className="absolute bottom-[-4px] left-1/2 -translate-x-1/2 w-0 h-[2px] bg-green-400"
+                      initial={{ scaleX: 0 }}
+                      animate={{ 
+                        width: activeSection === item.id ? '100%' : '0%',
+                        x: '-50%'
+                      }}
+                      transition={{ duration: 0.3 }}
+                    />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </header>
+
+        <AnimatePresence mode="wait">
+          {/* Bagian Projects */}
+          {activeSection === 'projects' && (
+            <motion.section
+              key="projects-section"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <div className="hidden md:grid grid-cols-12 gap-4 pb-2 border-b border-gray-700 text-gray-500">
+                <div className="col-span-4">PROJECT</div>
+                <div className="col-span-2">TYPE</div>
+                <div className="col-span-2">STATUS</div>
+                <div className="col-span-4">CREDITS</div>
+              </div>
+              {projects.slice(startIndex, endIndex).map((project, index) => (
+                <motion.div
+                  key={index}
+                  className="group py-6 border-b border-gray-800 cursor-pointer transition-colors duration-300 hover:border-green-400"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                  onClick={() => handleProjectClick(project)}
+                >
+                  <div className="md:grid md:grid-cols-12 md:gap-4 items-center">
+                    <div className="col-span-4 flex items-center">
+                      <span className="font-bold text-xl md:text-3xl group-hover:text-green-400 transition-colors duration-300">
+                        {project.title}
+                      </span>
+                      <span className="ml-4 text-gray-500 text-lg transition-transform duration-300 group-hover:translate-x-2">
+                        →
+                      </span>
+                    </div>
+                    <span className="hidden md:inline col-span-2 text-gray-500">{project.type}</span>
+                    <span className="hidden md:inline col-span-2 text-gray-500">{project.status}</span>
+                    <span className="hidden md:inline col-span-4 text-gray-500">
+                      <p>Web Dev: {project.webDeveloper}</p>
+                      <p>UI/UX: {project.uiUxDesigner}</p>
+                    </span>
+                    <div className="md:hidden mt-2 text-sm text-gray-500">
+                      <p>Type: {project.type}</p>
+                      <p>Status: {project.status}</p>
+                      <p>Web Dev: {project.webDeveloper}</p>
+                      <p>UI/UX: {project.uiUxDesigner}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+               {/* Tombol Navigasi */}
+              <div className="flex justify-between mt-8">
+                <button
+                  onClick={handlePrev}
+                  className="text-gray-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-300"
+                >
+                  ← PREV
+                </button>
+                <span className="text-gray-500">
+                  {page + 1} / {totalPages}
+                </span>
+                <button
+                  onClick={handleNext}
+                  className="text-gray-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-300"
+                >
+                  NEXT →
+                </button>
+              </div>
+            </motion.section>
+          )}
+
+          {/* Bagian Certificates */}
+          {activeSection === 'certificates' && (
+            <motion.section
+              key="certificates-section"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <div className="hidden md:grid grid-cols-12 gap-4 pb-2 border-b border-gray-700 text-gray-500">
+                <div className="col-span-6">CERTIFICATE NAME</div>
+                <div className="col-span-4">INSTITUTION</div>
+                <div className="col-span-2">YEAR</div>
+              </div>
+              {certificates.map((cert, index) => (
+                <motion.div
+                  key={index}
+                  className="py-6 border-b border-gray-800 cursor-pointer transition-colors duration-300 hover:border-green-400"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                  onClick={() => handleCertificateClick(cert)}
+                >
+                  <div className="md:grid md:grid-cols-12 md:gap-4 items-center">
+                    <span className="col-span-6 font-bold text-lg md:text-xl text-white">{cert.name}</span>
+                    <span className="col-span-4 text-gray-500">{cert.institution}</span>
+                    <span className="col-span-2 text-gray-500">{cert.year}</span>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.section>
+          )}
+
+          {/* Bagian Contact */}
+          {activeSection === 'contact' && (
+            <motion.section
+              key="contact-section"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <div className="max-w-3xl">
+                <h2 className="text-3xl font-bold mb-4">Contact Me</h2>
+                <p className="text-lg leading-relaxed text-gray-400 whitespace-pre-line">{contactDetails}</p>
+              </div>
+            </motion.section>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Pop-up Detail Project */}
       <AnimatePresence>
-        {hoveredIndex !== null && (
+        {selectedProject && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            style={{ 
-              translateX: smoothMouseX, 
-              translateY: smoothMouseY 
-            }}
-            className="pointer-events-none fixed top-0 left-0 z-50 p-4 bg-green-400 text-black rounded-lg shadow-2xl"
+            key="project-popup"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 p-4"
           >
-            <p className="font-bold">{projects[hoveredIndex].type}</p>
-            <p className="text-sm">{projects[hoveredIndex].year}</p>
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-black border border-gray-700 rounded-lg p-8 w-full max-w-2xl text-white relative"
+            >
+              <button 
+                onClick={() => setSelectedProject(null)}
+                className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors duration-300"
+              >
+                &times;
+              </button>
+              <h2 className="text-3xl font-bold mb-2 text-green-400">{selectedProject.title}</h2>
+              <p className="text-lg mb-4 text-gray-400">{selectedProject.type} ({selectedProject.year})</p>
+              
+              <div className="mb-4 text-gray-300">
+                <p>Status: <span className="font-bold">{selectedProject.status}</span></p>
+                <p>Web Dev: <span className="font-bold">{selectedProject.webDeveloper}</span></p>
+                <p>UI/UX: <span className="font-bold">{selectedProject.uiUxDesigner}</span></p>
+              </div>
+              
+              <p className="text-base leading-relaxed text-gray-300">{selectedProject.description}</p>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="max-w-7xl mx-auto">
-        <header className="mb-12">
-          <h1 className="text-2xl">INDEX</h1>
-        </header>
-
-        <motion.section
-          initial="hidden"
-          animate="visible"
-          variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
-        >
-          <div className="hidden md:grid grid-cols-12 gap-4 pb-2 border-b border-gray-700 text-gray-500">
-            <div className="col-span-12">PROJECT_NAME</div>
-          </div>
-          
-          {projects.map((project, index) => (
+      {/* Pop-up Detail Certificate */}
+      <AnimatePresence>
+        {selectedCertificate && (
+          <motion.div
+            key="certificate-popup"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 p-4"
+          >
             <motion.div
-              key={index}
-              className="group py-6 border-b border-gray-800 cursor-pointer"
-              variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-              onMouseEnter={() => setHoveredIndex(index)}
-              onMouseLeave={() => setHoveredIndex(null)}
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-black border border-gray-700 rounded-lg p-8 w-full max-w-xl text-white relative"
             >
-              <div className="flex justify-between items-center">
-                <span className="font-bold text-xl md:text-3xl group-hover:text-green-400 transition-colors duration-300">
-                  {project.title}
-                </span>
-                <span className="hidden md:inline text-gray-500 text-lg transition-transform duration-300 group-hover:translate-x-2">
-                  →
-                </span>
+              <button 
+                onClick={() => setSelectedCertificate(null)}
+                className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors duration-300"
+              >
+                &times;
+              </button>
+              <h2 className="text-3xl font-bold mb-2 text-green-400">{selectedCertificate.name}</h2>
+              <div className="mb-4 text-gray-300">
+                <p>Institution: <span className="font-bold">{selectedCertificate.institution}</span></p>
+                <p>Year: <span className="font-bold">{selectedCertificate.year}</span></p>
               </div>
             </motion.div>
-          ))}
-        </motion.section>
-      </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.main>
   );
 }
