@@ -26,7 +26,9 @@ const ScrambleText = ({ children }: { children: string }) => {
     }, 30);
   };
 
-  return <span onMouseEnter={scramble}>{text}</span>;
+  // Menggunakan onTouchStart untuk mobile dan onMouseEnter untuk desktop
+  // Menambahkan efek klik pada mobile
+  return <span onMouseEnter={scramble} onTouchStart={scramble}>{text}</span>;
 };
 
 interface StartPageProps {
@@ -37,18 +39,19 @@ export default function StartPage({ onEnter }: StartPageProps) {
   return (
     <motion.div
       exit={{ clipPath: 'inset(50% 0 50% 0)', transition: { duration: 0.8, ease: "easeOut" } }}
-      className="fixed inset-0 z-40 flex h-screen w-screen flex-col items-center justify-center bg-black text-white p-8"
+      // Padding diubah agar tidak terlalu mepet di mobile
+      className="fixed inset-0 z-40 flex h-screen w-screen flex-col items-center justify-center bg-black text-white p-4 md:p-8"
     >
       <div className="absolute inset-2 border-2 border-gray-700"></div>
 
       <div className="relative z-10 text-center">
-        <h1 className="text-4xl md:text-6xl font-bold cursor-pointer">
+        <h1 className="text-3xl md:text-6xl font-bold cursor-pointer">
           <ScrambleText>STEVE MULYA TJENDRATAMA</ScrambleText>
         </h1>
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1, transition: { duration: 1, delay: 0.4 } }}
-          className="mt-2 text-gray-400"
+          className="mt-2 text-gray-400 text-sm md:text-base"
         >
           {"// SOFTWARE ENGINEER"}
         </motion.p>
@@ -58,7 +61,8 @@ export default function StartPage({ onEnter }: StartPageProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1, transition: { duration: 1, delay: 0.8 } }}
         onClick={onEnter}
-        className="absolute bottom-16 cursor-pointer"
+        // Posisi tombol diubah menjadi relatif agar lebih fleksibel
+        className="absolute bottom-8 md:bottom-16 cursor-pointer"
       >
         <motion.div className="relative px-4 py-2" whileHover="hover" initial="rest">
           <motion.div 
@@ -67,7 +71,7 @@ export default function StartPage({ onEnter }: StartPageProps) {
             style={{ originY: 1 }}
             className="absolute inset-0 bg-green-400 z-0"
           />
-          <span className="relative z-10 text-lg font-bold mix-blend-difference">
+          <span className="relative z-10 text-md md:text-lg font-bold mix-blend-difference">
             [ PORTOFOLIO ]
           </span>
         </motion.div>

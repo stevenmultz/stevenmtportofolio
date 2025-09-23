@@ -147,20 +147,20 @@ export default function Homepage() {
     <motion.main
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, transition: { duration: 0.5 } }}
-      className="min-h-screen w-full bg-black text-white p-8 md:p-16 max-h-screen overflow-hidden"
+      className="min-h-screen w-full bg-black text-white p-4 md:p-16 max-h-screen overflow-hidden"
       style={{ fontFamily: "'Roboto Mono', monospace" }}
     >
       <div className="max-w-7xl mx-auto">
         {/* Header Navigasi */}
-        <header className="flex justify-between items-center mb-12 border-b border-gray-800 pb-4">
-          <h1 className="text-2xl">PORTOFOLIO</h1>
+        <header className="flex flex-col md:flex-row justify-between items-center mb-8 md:mb-12 border-b border-gray-800 pb-4">
+          <h1 className="text-xl md:text-2xl mb-4 md:mb-0">PORTOFOLIO</h1>
           <nav>
-            <ul className="flex space-x-8">
+            <ul className="flex space-x-4 md:space-x-8">
               {navItems.map((item) => (
                 <li key={item.id}>
                   <button
                     onClick={() => setActiveSection(item.id)}
-                    className={`group relative inline-block text-xl transition-colors duration-300 ${
+                    className={`group relative inline-block text-lg md:text-xl transition-colors duration-300 ${
                       activeSection === item.id ? 'text-green-400' : 'text-gray-400 hover:text-white'
                     }`}
                   >
@@ -223,15 +223,15 @@ export default function Homepage() {
                       <p>UI/UX: {project.uiUxDesigner}</p>
                     </span>
                     <div className="md:hidden mt-2 text-sm text-gray-500">
-                      <p>Type: {project.type}</p>
-                      <p>Status: {project.status}</p>
-                      <p>Web Dev: {project.webDeveloper}</p>
-                      <p>UI/UX: {project.uiUxDesigner}</p>
+                      <p><span className="text-white font-bold">Type:</span> {project.type}</p>
+                      <p><span className="text-white font-bold">Status:</span> {project.status}</p>
+                      <p><span className="text-white font-bold">Web Dev:</span> {project.webDeveloper}</p>
+                      <p><span className="text-white font-bold">UI/UX:</span> {project.uiUxDesigner}</p>
                     </div>
                   </div>
                 </motion.div>
               ))}
-               {/* Tombol Navigasi */}
+                {/* Tombol Navigasi */}
               <div className="flex justify-between mt-8">
                 <button
                   onClick={handlePrev}
@@ -277,8 +277,12 @@ export default function Homepage() {
                 >
                   <div className="md:grid md:grid-cols-12 md:gap-4 items-center">
                     <span className="col-span-6 font-bold text-lg md:text-xl text-white">{cert.name}</span>
-                    <span className="col-span-4 text-gray-500">{cert.institution}</span>
-                    <span className="col-span-2 text-gray-500">{cert.year}</span>
+                    <span className="hidden md:inline col-span-4 text-gray-500">{cert.institution}</span>
+                    <span className="hidden md:inline col-span-2 text-gray-500">{cert.year}</span>
+                    <div className="md:hidden mt-2 text-sm text-gray-500">
+                       <p><span className="text-white font-bold">Institution:</span> {cert.institution}</p>
+                       <p><span className="text-white font-bold">Year:</span> {cert.year}</p>
+                    </div>
                   </div>
                 </motion.div>
               ))}
@@ -295,8 +299,8 @@ export default function Homepage() {
               transition={{ duration: 0.5 }}
             >
               <div className="max-w-3xl">
-                <h2 className="text-3xl font-bold mb-4">Contact Me</h2>
-                <p className="text-lg leading-relaxed text-gray-400 whitespace-pre-line">{contactDetails}</p>
+                <h2 className="text-2xl md:text-3xl font-bold mb-4">Contact Me</h2>
+                <p className="text-base md:text-lg leading-relaxed text-gray-400 whitespace-pre-line">{contactDetails}</p>
               </div>
             </motion.section>
           )}
@@ -317,24 +321,24 @@ export default function Homepage() {
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="bg-black border border-gray-700 rounded-lg p-8 w-full max-w-2xl text-white relative"
+              className="bg-black border border-gray-700 rounded-lg p-6 md:p-8 w-full max-w-2xl text-white relative overflow-y-auto max-h-[90vh]"
             >
               <button 
                 onClick={() => setSelectedProject(null)}
-                className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors duration-300"
+                className="absolute top-2 right-2 md:top-4 md:right-4 text-gray-500 hover:text-white transition-colors duration-300 text-2xl"
               >
                 &times;
               </button>
-              <h2 className="text-3xl font-bold mb-2 text-green-400">{selectedProject.title}</h2>
-              <p className="text-lg mb-4 text-gray-400">{selectedProject.type} ({selectedProject.year})</p>
+              <h2 className="text-2xl md:text-3xl font-bold mb-2 text-green-400">{selectedProject.title}</h2>
+              <p className="text-md md:text-lg mb-4 text-gray-400">{selectedProject.type} ({selectedProject.year})</p>
               
-              <div className="mb-4 text-gray-300">
-                <p>Status: <span className="font-bold">{selectedProject.status}</span></p>
-                <p>Web Dev: <span className="font-bold">{selectedProject.webDeveloper}</span></p>
-                <p>UI/UX: <span className="font-bold">{selectedProject.uiUxDesigner}</span></p>
+              <div className="mb-4 text-gray-300 text-sm md:text-base">
+                <p><span className="font-bold">Status:</span> {selectedProject.status}</p>
+                <p><span className="font-bold">Web Dev:</span> {selectedProject.webDeveloper}</p>
+                <p><span className="font-bold">UI/UX:</span> {selectedProject.uiUxDesigner}</p>
               </div>
               
-              <p className="text-base leading-relaxed text-gray-300">{selectedProject.description}</p>
+              <p className="text-sm md:text-base leading-relaxed text-gray-300">{selectedProject.description}</p>
             </motion.div>
           </motion.div>
         )}
@@ -354,18 +358,18 @@ export default function Homepage() {
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="bg-black border border-gray-700 rounded-lg p-8 w-full max-w-xl text-white relative"
+              className="bg-black border border-gray-700 rounded-lg p-6 md:p-8 w-full max-w-xl text-white relative overflow-y-auto max-h-[90vh]"
             >
               <button 
                 onClick={() => setSelectedCertificate(null)}
-                className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors duration-300"
+                className="absolute top-2 right-2 md:top-4 md:right-4 text-gray-500 hover:text-white transition-colors duration-300 text-2xl"
               >
                 &times;
               </button>
-              <h2 className="text-3xl font-bold mb-2 text-green-400">{selectedCertificate.name}</h2>
-              <div className="mb-4 text-gray-300">
-                <p>Institution: <span className="font-bold">{selectedCertificate.institution}</span></p>
-                <p>Year: <span className="font-bold">{selectedCertificate.year}</span></p>
+              <h2 className="text-2xl md:text-3xl font-bold mb-2 text-green-400">{selectedCertificate.name}</h2>
+              <div className="mb-4 text-gray-300 text-sm md:text-base">
+                <p><span className="font-bold">Institution:</span> {selectedCertificate.institution}</p>
+                <p><span className="font-bold">Year:</span> {selectedCertificate.year}</p>
               </div>
             </motion.div>
           </motion.div>
