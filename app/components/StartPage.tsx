@@ -46,7 +46,7 @@ export default function StartPage({ onEnter }: StartPageProps) {
 
       <div className="relative z-10 text-center">
         <h1 className="text-3xl md:text-6xl font-bold cursor-pointer">
-          <ScrambleText>STEVE MULYA TJENDRATAMA</ScrambleText>
+          <ScrambleText>STEVEN MULYA TJENDRATAMA</ScrambleText>
         </h1>
         <motion.p
           initial={{ opacity: 0 }}

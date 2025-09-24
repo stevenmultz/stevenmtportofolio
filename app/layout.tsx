@@ -10,8 +10,8 @@ const robotoMono = Roboto_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Mulatama [RAW]",
-  description: "Functional Web Experiences",
+  title: "Steven MT Portofolio",
+  description: "Portofolio",
 };
 
 export default function RootLayout({
