@@ -13,6 +13,9 @@ interface Project {
   webDeveloper: string;
   uiUxDesigner: string;
   description: string;
+  skills: string[];
+  links: { label: string; url: string }[];
+  images: string[];
 }
 
 interface Certificate {
@@ -55,27 +58,43 @@ const projects: Project[] = [
     type: "Website Development",
     year: "2025",
     status: "Completed",
-    webDeveloper: "Jane Doe",
-    uiUxDesigner: "John Smith",
-    description: "Gohte Architects adalah studio arsitektur terkemuka yang berfokus pada desain berkelanjutan. Proyek ini melibatkan pembuatan situs web portofolio yang menampilkan karya-karya mereka dengan galeri visual yang interaktif dan modern."
+    webDeveloper: "Steven MT",
+    uiUxDesigner: "Jeremy A",
+    description: "Gohte Architects adalah studio arsitektur terkemuka yang berfokus pada desain berkelanjutan. Proyek ini melibatkan pembuatan situs web portofolio yang menampilkan karya-karya mereka dengan galeri visual yang interaktif dan modern.",
+    skills: ["React", "Next.js", "Tailwind CSS", "Framer Motion", "TypeScript"],
+    links: [
+      { label: "Live Site", url: "#" },
+      { label: "GitHub Repository", url: "#" }
+    ],
+    images: ["/webresponsive.jpg", "/python.png", "/machinelearning.png"]
   },
   {
     title: "Dama Studio",
-    type: "Website Development",
+    type: "E-commerce Development",
     year: "2025",
     status: "In Progress",
-    webDeveloper: "Jane Doe",
-    uiUxDesigner: "Alice Johnson",
-    description: "Dama Studio adalah studio seni dan desain. Kami sedang mengembangkan situs web e-commerce untuk menjual produk-produk seni mereka, dengan integrasi keranjang belanja yang mulus dan halaman produk yang elegan."
+    webDeveloper: "Steven MT",
+    uiUxDesigner: "Septiandy",
+    description: "Dama Studio adalah studio seni dan desain. Kami sedang mengembangkan situs web e-commerce untuk menjual produk-produk seni mereka, dengan integrasi keranjang belanja yang mulus dan halaman produk yang elegan.",
+    skills: ["Astro Framework", "React", "Node.js", "Express", "Supabase","Vercel"],
+    links: [
+      { label: "Preview", url: "#" }
+    ],
+    images: ["/aws_one.jpg", "/aws_two.jpg"]
   },
   {
     title: "Hutama Maju Sukses",
-    type: "Website Development",
+    type: "Corporate Website",
     year: "2024",
     status: "Completed",
-    webDeveloper: "Bob Williams",
-    uiUxDesigner: "John Smith",
-    description: "Sebuah situs web perusahaan untuk Hutama Maju Sukses, perusahaan manufaktur terkemuka. Fokus proyek ini adalah pada presentasi layanan dan portofolio produk mereka secara profesional dan informatif."
+    webDeveloper: "Steven MT",
+    uiUxDesigner: "Airyne",
+    description: "Sebuah situs web perusahaan untuk Hutama Maju Sukses, perusahaan manufaktur terkemuka. Fokus proyek ini adalah pada presentasi layanan dan portofolio produk mereka secara profesional dan informatif.",
+    skills: ["Laravel", "React", "MySQL", "XAMPP"],
+    links: [
+      { label: "Live Site", url: "#" }
+    ],
+    images: ["/programming.png", "/ntt.jpg", "/webresponsive.jpg"]
   },
   {
     title: "Archive Delta",
@@ -84,7 +103,13 @@ const projects: Project[] = [
     status: "Completed",
     webDeveloper: "Bob Williams",
     uiUxDesigner: "Alice Johnson",
-    description: "Archive Delta adalah sebuah arsip digital untuk proyek-proyek seni dan sejarah. Situs statis ini dioptimalkan untuk kecepatan dan aksesibilitas, menyajikan koleksi data yang terorganisir dengan baik."
+    description: "Archive Delta adalah sebuah arsip digital untuk proyek-proyek seni dan sejarah. Situs statis ini dioptimalkan untuk kecepatan dan aksesibilitas, menyajikan koleksi data yang terorganisir dengan baik.",
+    skills: ["Astro", "Markdown", "Tailwind CSS", "Vercel"],
+    links: [
+        { label: "Live Site", url: "#" },
+        { label: "GitHub", url: "#" }
+    ],
+    images: ["/python.png", "/machinelearning.png"]
   },
   {
     title: "EcoTech Solutions",
@@ -93,7 +118,12 @@ const projects: Project[] = [
     status: "Completed",
     webDeveloper: "Alice Johnson",
     uiUxDesigner: "John Smith",
-    description: "Sebuah aplikasi web inovatif untuk memonitor data lingkungan. Pengguna dapat melacak konsumsi energi dan emisi karbon mereka melalui dasbor interaktif yang intuitif."
+    description: "Sebuah aplikasi web inovatif untuk memonitor data lingkungan. Pengguna dapat melacak konsumsi energi dan emisi karbon mereka melalui dasbor interaktif yang intuitif.",
+    skills: ["React", "Node.js", "Express", "MongoDB", "Chart.js"],
+    links: [
+        { label: "Live Application", url: "#" }
+    ],
+    images: ["/aws_one.jpg", "/aws_two.jpg", "/ntt.jpg"]
   },
   {
     title: "Aura Creative",
@@ -102,7 +132,12 @@ const projects: Project[] = [
     status: "In Progress",
     webDeveloper: "Bob Williams",
     uiUxDesigner: "Alice Johnson",
-    description: "Aura Creative berfokus pada produk-produk kecantikan dan gaya hidup. Proyek ini membangun platform e-commerce yang menarik, dengan fitur rekomendasi produk dan ulasan pelanggan."
+    description: "Aura Creative berfokus pada produk-produk kecantikan dan gaya hidup. Proyek ini membangun platform e-commerce yang menarik, dengan fitur rekomendasi produk dan ulasan pelanggan.",
+    skills: ["Shopify Liquid", "JavaScript", "GraphQL", "Figma"],
+    links: [
+        { label: "Development Preview", url: "#" }
+    ],
+    images: ["/webresponsive.jpg", "/programming.png"]
   },
   {
     title: "Future Labs",
@@ -111,7 +146,12 @@ const projects: Project[] = [
     status: "Completed",
     webDeveloper: "Jane Doe",
     uiUxDesigner: "Bob Williams",
-    description: "Portal penelitian untuk komunitas ilmiah. Aplikasi ini menyediakan alat untuk berbagi publikasi, data, dan berkolaborasi dalam proyek-proyek penelitian, dengan antarmuka yang bersih dan mudah digunakan."
+    description: "Portal penelitian untuk komunitas ilmiah. Aplikasi ini menyediakan alat untuk berbagi publikasi, data, dan berkolaborasi dalam proyek-proyek penelitian, dengan antarmuka yang bersih dan mudah digunakan.",
+    skills: ["Python (Django)", "PostgreSQL", "React", "Docker"],
+    links: [
+        { label: "Portal", url: "#" }
+    ],
+    images: ["/python.png", "/machinelearning.png", "/aws_one.jpg"]
   },
   {
     title: "Pixel Perfect",
@@ -120,7 +160,12 @@ const projects: Project[] = [
     status: "Completed",
     webDeveloper: "John Smith",
     uiUxDesigner: "Jane Doe",
-    description: "Situs web agensi kreatif yang menampilkan portofolio dan layanan mereka. Fokus desainnya adalah pada tipografi yang kuat dan tata letak yang minimalis untuk menyoroti konten visual."
+    description: "Situs web agensi kreatif yang menampilkan portofolio dan layanan mereka. Fokus desainnya adalah pada tipografi yang kuat dan tata letak yang minimalis untuk menyoroti konten visual.",
+    skills: ["GSAP", "Three.js", "Blender", "HTML5", "CSS3"],
+    links: [
+        { label: "Live Site", url: "#" }
+    ],
+    images: ["/aws_two.jpg", "/ntt.jpg"]
   },
 ];
 
@@ -137,7 +182,7 @@ const certificates: Certificate[] = [
 const contactDetails = `
   Email: stevenmulya@gmail.com
   Whatsapp: +6287773298907
-  Domicile: Tangerang,
+  Domicile: Tangerang, Indonesia
 `;
 
 // ==================== Reusable Components ====================
@@ -154,7 +199,7 @@ const ProjectModal = ({ project, onClose }: ProjectModalProps) => (
       initial={{ scale: 0.9, y: 20 }}
       animate={{ scale: 1, y: 0 }}
       exit={{ scale: 0.9, y: 20 }}
-      className="bg-black border border-green-700 rounded-lg p-6 md:p-8 w-full max-w-2xl text-white relative overflow-y-auto max-h-[90vh]"
+      className="bg-black border border-green-700 rounded-lg p-6 md:p-8 w-full max-w-3xl text-white relative overflow-y-auto max-h-[90vh]"
     >
       <button
         onClick={onClose}
@@ -171,10 +216,52 @@ const ProjectModal = ({ project, onClose }: ProjectModalProps) => (
         <p><span className="font-bold">UI/UX:</span> {project.uiUxDesigner}</p>
       </div>
 
-      <p className="text-sm md:text-base leading-relaxed text-gray-300">{project.description}</p>
+      <p className="text-sm md:text-base leading-relaxed text-gray-300 mb-6">{project.description}</p>
+      
+      {/* --- Skills Section --- */}
+      <div className="mb-6">
+        <h3 className="font-bold mb-2 text-gray-400 text-sm uppercase tracking-wider">Skills Acquired</h3>
+        <div className="flex flex-wrap gap-2">
+          {project.skills.map((skill, index) => (
+            <span key={index} className="bg-gray-800 text-green-400 text-xs font-medium px-2.5 py-1 rounded-full">
+              {skill}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* --- Links Section --- */}
+      <div className="mb-6">
+          <h3 className="font-bold mb-2 text-gray-400 text-sm uppercase tracking-wider">Project Links</h3>
+          <div className="flex flex-wrap gap-4 items-center">
+              {project.links.map((link, index) => (
+                  <a 
+                      key={index} 
+                      href={link.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-green-400 hover:underline transition-colors duration-300"
+                  >
+                      {link.label} &rarr;
+                  </a>
+              ))}
+          </div>
+      </div>
+      
+      {/* --- Image Gallery --- */}
+      <div>
+        <h3 className="font-bold mb-3 text-gray-400 text-sm uppercase tracking-wider">Gallery</h3>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {project.images.map((img, index) => (
+            <img key={index} src={img} alt={`${project.title} screenshot ${index + 1}`} className="w-full h-auto rounded-md object-cover border border-gray-800" />
+          ))}
+        </div>
+      </div>
+
     </motion.div>
   </motion.div>
 );
+
 
 // Certificate modal to display detailed certificate info
 const CertificateModal = ({ certificate, onClose }: CertificateModalProps) => (
