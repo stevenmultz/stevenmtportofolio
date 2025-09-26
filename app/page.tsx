@@ -1,7 +1,6 @@
-// app/page.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 
 import Loading from './components/Loading';
@@ -9,28 +8,39 @@ import StartPage from './components/StartPage';
 import Homepage from './components/HomePage';
 
 export default function Home() {
-  const [loading, setLoading] = useState(true);
-  const [started, setStarted] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasStarted, setHasStarted] = useState(false);
 
-  useEffect(() => {
-    // Durasi diubah agar sesuai dengan animasi loading yang lebih panjang
-    // Memberi waktu 4.5 detik sebelum pindah ke StartPage
-    const timer = setTimeout(() => setLoading(false), 7000); // <-- UBAH ANGKA INI
-    return () => clearTimeout(timer);
-  }, []);
+  // useEffect dengan setTimeout tidak lagi diperlukan.
+  // Dihapus untuk sinkronisasi yang lebih baik.
 
   const handleEnter = () => {
-    setStarted(true);
+    setHasStarted(true);
   };
 
   return (
     <>
       <AnimatePresence>
-        {loading && <Loading />}
-        {!loading && !started && <StartPage onEnter={handleEnter} />}
+        {/*
+          - Tampilkan Loading selama isLoading=true.
+          - Saat animasi di Loading selesai, ia akan memanggil onLoadingComplete.
+          - onLoadingComplete akan menjalankan setIsLoading(false), yang menyembunyikan komponen ini.
+        */}
+        {isLoading && (
+          <Loading onLoadingComplete={() => setIsLoading(false)} />
+        )}
+        
+        {/*
+          - Tampilkan StartPage setelah loading selesai DAN sebelum user menekan "Enter".
+        */}
+        {!isLoading && !hasStarted && <StartPage onEnter={handleEnter} />}
       </AnimatePresence>
 
-      {started && <Homepage />}
+      {/*
+        - Tampilkan Homepage secara permanen setelah user menekan "Enter" di StartPage.
+        - Komponen ini tidak perlu di dalam AnimatePresence karena tidak akan pernah hilang (unmount).
+      */}
+      {hasStarted && <Homepage />}
     </>
   );
 }
