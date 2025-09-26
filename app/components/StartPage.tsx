@@ -14,7 +14,6 @@ export default function StartPage({ onEnter }: StartPageProps) {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    // Pengecekan awal ini bagus untuk menghentikan setup jika canvas belum siap
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
@@ -25,15 +24,13 @@ export default function StartPage({ onEnter }: StartPageProps) {
     const mouse = { x: -1000, y: -1000, radius: 100 };
 
     const resizeCanvas = () => {
-      // FIX: Tambahkan pengecekan null di sini
       if (!canvas) return;
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-      initParticles(); // Panggil initParticles setelah resize
+      initParticles();
     };
     
     const initParticles = () => {
-      // FIX: Tambahkan pengecekan null di sini juga
       if (!canvas) return;
       particles.length = 0;
       const particleCount = (canvas.width * canvas.height) / 9000;
@@ -44,7 +41,6 @@ export default function StartPage({ onEnter }: StartPageProps) {
       }
     };
     
-    // Panggil resizeCanvas pertama kali untuk setup awal
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
@@ -58,25 +54,33 @@ export default function StartPage({ onEnter }: StartPageProps) {
       x: number; y: number; size: number; baseX: number; baseY: number; density: number; color: string;
       constructor(x: number, y: number) { this.x = x; this.y = y; this.size = Math.random() * 1.5 + 1; this.baseX = this.x; this.baseY = this.y; this.density = (Math.random() * 30) + 1; this.color = 'rgba(57, 255, 20, 0.8)'; }
       draw() { if (!ctx) return; ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.closePath(); ctx.fill(); }
+      
       update() {
-        let dx = mouse.x - this.x; let dy = mouse.y - this.y; let distance = Math.sqrt(dx * dx + dy * dy);
-        let forceDirectionX = dx / distance; let forceDirectionY = dy / distance; let maxDistance = mouse.radius; let force = (maxDistance - distance) / maxDistance;
-        let directionX = forceDirectionX * force * this.density; let directionY = forceDirectionY * force * this.density;
+        // FIX: Mengganti semua 'let' menjadi 'const' karena nilai tidak diubah
+        const dx = mouse.x - this.x;
+        const dy = mouse.y - this.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const forceDirectionX = dx / distance;
+        const forceDirectionY = dy / distance;
+        const maxDistance = mouse.radius;
+        const force = (maxDistance - distance) / maxDistance;
+        const directionX = forceDirectionX * force * this.density;
+        const directionY = forceDirectionY * force * this.density;
+
         if (distance < mouse.radius) { this.x -= directionX; this.y -= directionY;
         } else {
-          if (this.x !== this.baseX) { let dx = this.x - this.baseX; this.x -= dx / 10; }
-          if (this.y !== this.baseY) { let dy = this.y - this.baseY; this.y -= dy / 10; }
+          if (this.x !== this.baseX) { const dx = this.x - this.baseX; this.x -= dx / 10; }
+          if (this.y !== this.baseY) { const dy = this.y - this.baseY; this.y -= dy / 10; }
         }
       }
     }
 
     const connect = () => {
-      // FIX: Tambahkan pengecekan null di sini juga
       if (!ctx || !canvas) return;
-      let opacityValue = 1;
+      let opacityValue = 1; // let di sini oke karena nilainya bisa berubah dalam loop
       for (let a = 0; a < particles.length; a++) {
         for (let b = a; b < particles.length; b++) {
-          let distance = ((particles[a].x - particles[b].x) * (particles[a].x - particles[b].x))
+          const distance = ((particles[a].x - particles[b].x) * (particles[a].x - particles[b].x))
                        + ((particles[a].y - particles[b].y) * (particles[a].y - particles[b].y));
           if (distance < (canvas.width / 7) * (canvas.height / 7)) {
             opacityValue = 1 - (distance / 20000);

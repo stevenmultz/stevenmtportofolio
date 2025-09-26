@@ -2,7 +2,8 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect, useMemo } from 'react';
-// Ensure your data path is correct
+import Image from 'next/image';
+// Pastikan path ke data Anda sudah benar
 import { projects, certificates, contactDetails, Project, Certificate } from '@/app/data/portfolioData';
 
 // =============================================================
@@ -77,7 +78,17 @@ const ProjectModal = ({ project, onClose }: ProjectModalProps) => (
       </div>
       <h3 className="font-bold mb-3 text-white/60 text-sm uppercase tracking-wider">Gallery</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {project.images.map((img, index) => <img key={index} src={img} alt={`${project.title} screenshot ${index + 1}`} className="w-full h-auto rounded-md object-cover border border-white/10" />)}
+        {project.images.map((img, index) => (
+          <div key={index} className="relative w-full aspect-video">
+            <Image 
+              src={img} 
+              alt={`${project.title} screenshot ${index + 1}`} 
+              layout="fill"
+              objectFit="cover"
+              className="rounded-md border border-white/10" 
+            />
+          </div>
+        ))}
       </div>
     </motion.div>
   </motion.div>
@@ -93,7 +104,15 @@ const CertificateModal = ({ certificate, onClose }: CertificateModalProps) => (
       className="bg-[#0A0A0A] border border-green-400/30 rounded-lg p-6 md:p-8 w-full max-w-2xl text-white relative overflow-y-auto max-h-[90vh] font-mono custom-scrollbar"
     >
       <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors text-2xl z-20">&times;</button>
-      <img src={certificate.imageUrl} alt={`Certificate for ${certificate.name}`} className="w-full rounded-lg mb-6 border border-white/10" />
+      <div className="relative w-full aspect-video mb-6">
+        <Image 
+            src={certificate.imageUrl} 
+            alt={`Certificate for ${certificate.name}`} 
+            layout="fill"
+            objectFit="contain"
+            className="rounded-lg border border-white/10"
+        />
+      </div>
       <h2 className="text-xl md:text-2xl font-bold mb-2 text-green-400">{certificate.name}</h2>
       <p className="text-md md:text-lg text-white/60">{certificate.institution} ({certificate.year})</p>
     </motion.div>
@@ -109,7 +128,7 @@ const ProjectListItem = ({ project, onClick }: { project: Project, onClick: (p: 
   const [isHovered, setIsHovered] = useState(false);
   return (
     <motion.div
-      className="group relative cursor-pointer py-5 md:py-6 border-b border-white/10 transition-transform duration-300 md:hover:scale-[1.02]"
+      className="group relative cursor-pointer py-5 md:py-6 border-b border-white/10 transition-transform duration-300 md:hover:scale-[1.01]"
       onClick={() => onClick(project)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
