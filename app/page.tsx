@@ -1,46 +1,36 @@
 // app/page.tsx
 'use client';
-import { Canvas } from '@react-three/fiber';
-import { ScrollControls, Scroll } from '@react-three/drei';
-import { Experience } from './components/Experience';
-import { Overlay } from './components/Overlay';
-import Lenis from '@studio-freight/lenis';
-import { useEffect } from 'react';
+
+import { useState, useEffect } from 'react';
+import { AnimatePresence } from 'framer-motion';
+
+import Loading from './components/Loading';
+import StartPage from './components/StartPage';
+import Homepage from './components/HomePage';
 
 export default function Home() {
+  const [loading, setLoading] = useState(true);
+  const [started, setStarted] = useState(false);
+
   useEffect(() => {
-    const lenis = new Lenis();
-    
-    let animationFrameId: number;
-
-    function raf(time: number) {
-      lenis.raf(time);
-      animationFrameId = requestAnimationFrame(raf);
-    }
-
-    animationFrameId = requestAnimationFrame(raf);
-
-    // PERBAIKAN: Menambahkan fungsi cleanup
-    // Fungsi ini akan berjalan saat komponen di-unmount (atau saat Fast Refresh terjadi)
-    // Ini akan menghentikan loop animasi dan membersihkan instance lenis,
-    // sehingga tidak ada konflik saat komponen baru dibuat.
-    return () => {
-      cancelAnimationFrame(animationFrameId);
-      lenis.destroy();
-    };
+    // Durasi diubah agar sesuai dengan animasi loading yang lebih panjang
+    // Memberi waktu 4.5 detik sebelum pindah ke StartPage
+    const timer = setTimeout(() => setLoading(false), 7000); // <-- UBAH ANGKA INI
+    return () => clearTimeout(timer);
   }, []);
 
+  const handleEnter = () => {
+    setStarted(true);
+  };
+
   return (
-    <main className="h-screen w-screen bg-black">
-      <Canvas>
-        <color attach="background" args={['#000000']} />
-        <ScrollControls pages={5} damping={0.3} horizontal>
-          <Experience />
-          <Scroll html>
-            <Overlay />
-          </Scroll>
-        </ScrollControls>
-      </Canvas>
-    </main>
+    <>
+      <AnimatePresence>
+        {loading && <Loading />}
+        {!loading && !started && <StartPage onEnter={handleEnter} />}
+      </AnimatePresence>
+
+      {started && <Homepage />}
+    </>
   );
 }
