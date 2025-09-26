@@ -1,29 +1,18 @@
 // app/layout.tsx
-import type { Metadata } from "next";
-import { Roboto_Mono } from "next/font/google";
-import "./globals.css";
+import { Inter, Chakra_Petch } from 'next/font/google';
+import './globals.css';
 
-// Menggunakan modul next/font/google untuk memuat font
-const robotoMono = Roboto_Mono({
-  subsets: ["latin"],
-  display: "swap",
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+const chakraPetch = Chakra_Petch({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  variable: '--font-chakra-petch',
 });
 
-export const metadata: Metadata = {
-  title: "Steven MT Portofolio",
-  description: "Portofolio",
-};
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className={robotoMono.className}>
-        {children}
-      </body>
+    <html lang="en" className={`${inter.variable} ${chakraPetch.variable}`}>
+      <body>{children}</body>
     </html>
   );
 }
