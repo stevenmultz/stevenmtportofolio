@@ -12,9 +12,9 @@ export default function StartPage({ onEnter }: StartPageProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isHovered, setIsHovered] = useState(false);
 
-  // Efek utama untuk animasi partikel di Canvas
   useEffect(() => {
     const canvas = canvasRef.current;
+    // Pengecekan awal ini bagus untuk menghentikan setup jika canvas belum siap
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
@@ -25,9 +25,26 @@ export default function StartPage({ onEnter }: StartPageProps) {
     const mouse = { x: -1000, y: -1000, radius: 100 };
 
     const resizeCanvas = () => {
+      // FIX: Tambahkan pengecekan null di sini
+      if (!canvas) return;
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+      initParticles(); // Panggil initParticles setelah resize
     };
+    
+    const initParticles = () => {
+      // FIX: Tambahkan pengecekan null di sini juga
+      if (!canvas) return;
+      particles.length = 0;
+      const particleCount = (canvas.width * canvas.height) / 9000;
+      for (let i = 0; i < particleCount; i++) {
+        let x = Math.random() * canvas.width;
+        let y = Math.random() * canvas.height;
+        particles.push(new Particle(x, y));
+      }
+    };
+    
+    // Panggil resizeCanvas pertama kali untuk setup awal
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
@@ -38,79 +55,29 @@ export default function StartPage({ onEnter }: StartPageProps) {
     window.addEventListener('mousemove', mouseMoveHandler);
 
     class Particle {
-      x: number;
-      y: number;
-      size: number;
-      baseX: number;
-      baseY: number;
-      density: number;
-      color: string;
-
-      constructor(x: number, y: number) {
-        this.x = x;
-        this.y = y;
-        this.size = Math.random() * 1.5 + 1;
-        this.baseX = this.x;
-        this.baseY = this.y;
-        this.density = (Math.random() * 30) + 1;
-        this.color = 'rgba(57, 255, 20, 0.8)';
-      }
-
-      draw() {
-        if (!ctx) return;
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.fill();
-      }
-
+      x: number; y: number; size: number; baseX: number; baseY: number; density: number; color: string;
+      constructor(x: number, y: number) { this.x = x; this.y = y; this.size = Math.random() * 1.5 + 1; this.baseX = this.x; this.baseY = this.y; this.density = (Math.random() * 30) + 1; this.color = 'rgba(57, 255, 20, 0.8)'; }
+      draw() { if (!ctx) return; ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.closePath(); ctx.fill(); }
       update() {
-        let dx = mouse.x - this.x;
-        let dy = mouse.y - this.y;
-        let distance = Math.sqrt(dx * dx + dy * dy);
-        let forceDirectionX = dx / distance;
-        let forceDirectionY = dy / distance;
-        let maxDistance = mouse.radius;
-        let force = (maxDistance - distance) / maxDistance;
-        let directionX = forceDirectionX * force * this.density;
-        let directionY = forceDirectionY * force * this.density;
-
-        if (distance < mouse.radius) {
-          this.x -= directionX;
-          this.y -= directionY;
+        let dx = mouse.x - this.x; let dy = mouse.y - this.y; let distance = Math.sqrt(dx * dx + dy * dy);
+        let forceDirectionX = dx / distance; let forceDirectionY = dy / distance; let maxDistance = mouse.radius; let force = (maxDistance - distance) / maxDistance;
+        let directionX = forceDirectionX * force * this.density; let directionY = forceDirectionY * force * this.density;
+        if (distance < mouse.radius) { this.x -= directionX; this.y -= directionY;
         } else {
-          if (this.x !== this.baseX) {
-            let dx = this.x - this.baseX;
-            this.x -= dx / 10;
-          }
-          if (this.y !== this.baseY) {
-            let dy = this.y - this.baseY;
-            this.y -= dy / 10;
-          }
+          if (this.x !== this.baseX) { let dx = this.x - this.baseX; this.x -= dx / 10; }
+          if (this.y !== this.baseY) { let dy = this.y - this.baseY; this.y -= dy / 10; }
         }
       }
     }
 
-    const initParticles = () => {
-      particles.length = 0;
-      const particleCount = (canvas.width * canvas.height) / 9000;
-      for (let i = 0; i < particleCount; i++) {
-        let x = Math.random() * canvas.width;
-        let y = Math.random() * canvas.height;
-        particles.push(new Particle(x, y));
-      }
-    };
-    initParticles();
-
     const connect = () => {
-      if (!ctx) return;
+      // FIX: Tambahkan pengecekan null di sini juga
+      if (!ctx || !canvas) return;
       let opacityValue = 1;
       for (let a = 0; a < particles.length; a++) {
         for (let b = a; b < particles.length; b++) {
           let distance = ((particles[a].x - particles[b].x) * (particles[a].x - particles[b].x))
                        + ((particles[a].y - particles[b].y) * (particles[a].y - particles[b].y));
-          
           if (distance < (canvas.width / 7) * (canvas.height / 7)) {
             opacityValue = 1 - (distance / 20000);
             ctx.strokeStyle = `rgba(57, 255, 20, ${opacityValue})`;
@@ -126,7 +93,7 @@ export default function StartPage({ onEnter }: StartPageProps) {
 
     const animate = () => {
       if (!ctx) return;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
       for (let i = 0; i < particles.length; i++) {
         particles[i].update();
         particles[i].draw();
@@ -143,7 +110,6 @@ export default function StartPage({ onEnter }: StartPageProps) {
     };
   }, []);
 
-  // FIX: Menambahkan 'as const' pada properti 'ease'
   const lineVariants = {
     rest: { scaleX: 0 },
     hover: { scaleX: 1, transition: { duration: 0.4, ease: 'easeOut' as const } },
@@ -155,20 +121,18 @@ export default function StartPage({ onEnter }: StartPageProps) {
       className="fixed inset-0 z-40 bg-black flex items-center justify-center font-mono"
     >
       <canvas ref={canvasRef} className="absolute inset-0 z-0" />
-
       <motion.div 
         className="relative z-10 flex flex-col items-center"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1.5, delay: 0.5 }}
       >
-        <h1 className="text-4xl md:text-5xl font-bold uppercase tracking-wider text-white/90">
+        <h1 className="text-4xl md:text-5xl font-bold uppercase tracking-wider text-white/90 text-center">
           STEVEN MULYA TJENDRATAMA
         </h1>
         <p className="mt-4 text-lg tracking-[0.2em] text-white/60">
           SOFTWARE ENGINEER
         </p>
-
         <motion.div
           onClick={onEnter}
           onMouseEnter={() => setIsHovered(true)}
@@ -183,26 +147,8 @@ export default function StartPage({ onEnter }: StartPageProps) {
           >
             ENTER
           </motion.span>
-          
-          <div className="absolute bottom-4 w-32 h-px">
-            <motion.div
-              className="absolute inset-0 bg-green-400"
-              style={{ originX: 0.5 }}
-              variants={lineVariants}
-              initial="rest"
-              animate={isHovered ? "hover" : "rest"}
-            />
-          </div>
-          
-           <div className="absolute top-4 w-32 h-px">
-            <motion.div
-              className="absolute inset-0 bg-green-400"
-              style={{ originX: 0.5 }}
-              variants={lineVariants}
-              initial="rest"
-              animate={isHovered ? "hover" : "rest"}
-            />
-          </div>
+          <div className="absolute bottom-4 w-32 h-px"><motion.div className="absolute inset-0 bg-green-400" style={{ originX: 0.5 }} variants={lineVariants} initial="rest" animate={isHovered ? "hover" : "rest"} /></div>
+          <div className="absolute top-4 w-32 h-px"><motion.div className="absolute inset-0 bg-green-400" style={{ originX: 0.5 }} variants={lineVariants} initial="rest" animate={isHovered ? "hover" : "rest"} /></div>
         </motion.div>
       </motion.div>
     </motion.div>
