@@ -1,69 +1,81 @@
-// app/components/Loading.tsx
 'use client';
 
-import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
+import { useEffect } from 'react';
 
-// Teks boot sequence yang lebih realistis
-const bootSequence = `
-INITIATING KERNEL V5.8.1-MULATAMA
-MEMORY CHECK: 2048MB RAM... OK
-DETECTING HARDWARE...
-  > CPU: INTEL CORE I9 @ 3.60GHZ
-  > GPU: NVIDIA RTX 4090
-  > STORAGE: 1TB NVME SSD
-LOADING ASSETS... [||||||||||] 100%
-DECRYPTING DATA... COMPLETE
+// Props untuk memberitahu parent component bahwa loading sudah selesai
+interface LoadingProps {
+  onLoadingComplete: () => void;
+}
 
-SYSTEM READY. AWAITING COMMAND...
->> EXECUTING: MULATAMA.EXE
-`;
-
-export default function Loading() {
-  const [log, setLog] = useState('');
-  const [showCursor, setShowCursor] = useState(true);
+export default function Loading({ onLoadingComplete }: LoadingProps) {
+  // Motion value untuk menganimasikan angka dari 0 ke 100
+  const count = useMotionValue(0);
+  // Transform untuk membulatkan angka (agar tidak ada desimal)
+  const rounded = useTransform(count, latest => Math.round(latest));
 
   useEffect(() => {
-    let i = 0;
-    const type = () => {
-      if (i < bootSequence.length) {
-        setLog(bootSequence.substring(0, i + 1));
-        i++;
-        setTimeout(type, 10);
-      } else {
-        setShowCursor(false); 
-      }
-    };
-    type();
+    const controls = animate(count, 100, {
+      duration: 3, // Durasi total animasi loading (dalam detik)
+      ease: 'easeInOut',
+      onComplete: () => {
+        // Panggil fungsi callback setelah 0.5 detik untuk transisi
+        setTimeout(onLoadingComplete, 500);
+      },
+    });
 
-    const blinkInterval = setInterval(() => {
-      setShowCursor(prev => !prev);
-    }, 800);
-
-    return () => clearInterval(blinkInterval);
-  }, []);
+    // Cleanup function untuk menghentikan animasi jika komponen unmount
+    return controls.stop;
+  }, [count, onLoadingComplete]);
 
   return (
     <motion.div
-      exit={{ opacity: 0, transition: { duration: 0.5, delay: 0.5 } }}
-      // Tambahkan overflow-hidden pada sumbu x
-      className="fixed inset-0 z-50 flex items-start justify-start bg-black p-4 md:p-8 overflow-hidden"
+      // Animasi saat komponen hilang (exit)
+      exit={{ 
+        clipPath: 'polygon(0% 0%, 100% 0%, 100% 0%, 0% 0%)',
+        transition: { duration: 0.8, ease: 'easeOut' } 
+      }}
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black font-mono"
     >
-      <pre 
-        // Menggunakan text-sm (default) untuk mobile dan md:text-base untuk desktop
-        // Gunakan leading-snug untuk jarak antar baris yang lebih rapat
-        className="text-sm md:text-base font-normal text-green-400 leading-snug w-full whitespace-pre-wrap"
-        style={{ fontFamily: "'Roboto Mono', monospace" }}
+      {/* Simbol Hexagon dengan Animasi */}
+      <motion.svg
+        width="100"
+        height="115"
+        viewBox="0 0 100 115"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
       >
-        {log}
-        <motion.span
-          animate={{ opacity: showCursor ? [0, 1, 0] : 1 }}
-          transition={{ duration: 0.8, repeat: Infinity }}
-          className="bg-green-400 w-2 h-4 md:w-3 md:h-5 inline-block"
-        >
-          &nbsp;
-        </motion.span>
-      </pre>
+        <motion.path
+          d="M50 2.5L97.5 30V85L50 112.5L2.5 85V30L50 2.5Z"
+          stroke="#39FF14"
+          strokeWidth="3"
+          // Animasi "drawing"
+          initial={{ pathLength: 0, opacity: 0 }}
+          animate={{ pathLength: 1, opacity: 1 }}
+          transition={{ duration: 1.5, ease: 'easeInOut' }}
+        />
+        {/* Efek denyut/pulse pada hexagon */}
+        <motion.path
+          d="M50 2.5L97.5 30V85L50 112.5L2.5 85V30L50 2.5Z"
+          stroke="#39FF14"
+          strokeWidth="3"
+          initial={{ scale: 1, opacity: 0.5 }}
+          animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.2, 0.5] }}
+          transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+          style={{ transformOrigin: '50% 50%' }}
+        />
+      </motion.svg>
+
+      {/* Teks Status dan Counter Persentase */}
+      <div className="mt-8 text-center">
+        <p className="text-lg tracking-[0.2em] text-green-400/80">
+          SYSTEM KERNEL INITIALIZING
+        </p>
+        <div className="flex items-center justify-center mt-2 text-2xl text-white">
+          <motion.span>{rounded}</motion.span>
+          <span>%</span>
+        </div>
+      </div>
     </motion.div>
   );
 }

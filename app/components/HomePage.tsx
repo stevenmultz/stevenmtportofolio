@@ -1,360 +1,206 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
-// Import data dan tipe dari file terpisah
+import { useState, useEffect, useMemo } from 'react';
+// Pastikan path ke data Anda sudah benar
 import { projects, certificates, contactDetails, Project, Certificate } from '@/app/data/portfolioData';
 
-// ==================== Type Definitions for Props ====================
-// Mendefinisikan tipe untuk props komponen agar lebih aman dan jelas.
-interface ProjectModalProps {
-  project: Project;
-  onClose: () => void;
-}
+// =============================================================
+// === TYPE DEFINITIONS ===
+// =============================================================
+interface ProjectModalProps { project: Project; onClose: () => void; }
+interface CertificateModalProps { certificate: Certificate; onClose: () => void; }
+interface ProjectSectionProps { handleProjectClick: (project: Project) => void; }
+interface CertificatesSectionProps { handleCertificateClick: (certificate: Certificate) => void; }
 
-interface CertificateModalProps {
-  certificate: Certificate;
-  onClose: () => void;
-}
+// =============================================================
+// === BACKGROUND & DECORATIVE COMPONENTS ===
+// =============================================================
 
-interface ProjectSectionProps {
-  handleProjectClick: (project: Project) => void;
-}
+const MATRIX_CHARS = "アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン";
 
-interface CertificatesSectionProps {
-  handleCertificateClick: (certificate: Certificate) => void;
-}
+const GridBackground = () => (
+  <div className="absolute inset-0 z-0 h-full w-full bg-transparent">
+    <div className="absolute inset-0 h-full w-full bg-black [background:linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:3rem_3rem]"></div>
+  </div>
+);
 
-interface PaginationControlsProps {
-  page: number;
-  totalPages: number;
-  handlePrev: () => void;
-  handleNext: () => void;
-}
+const SubtleDataStream = () => {
+  const columns = useMemo(() => Array(40).fill(0).map((_, i) => ({
+    id: i,
+    chars: Array(20).fill(0).map(() => MATRIX_CHARS[Math.floor(Math.random() * MATRIX_CHARS.length)]).join(''),
+    duration: Math.random() * 20 + 25,
+    delay: Math.random() * 15,
+  })), []);
 
-// ==================== Reusable Components ====================
+  return (
+    <div className="absolute inset-0 z-0 overflow-hidden">
+      {columns.map(col => (
+        <motion.p
+          key={col.id}
+          className="font-mono text-green-400/5 text-sm break-all absolute leading-tight"
+          style={{ left: `${(100 / columns.length) * col.id}%`, writingMode: 'vertical-rl', textOrientation: 'upright' }}
+          initial={{ y: '-100%' }}
+          animate={{ y: '100%' }}
+          transition={{ duration: col.duration, delay: col.delay, repeat: Infinity, ease: 'linear' }}
+        />
+      ))}
+    </div>
+  );
+};
 
-// Project modal to display detailed project info
+// =============================================================
+// === MODAL COMPONENTS ===
+// =============================================================
+
 const ProjectModal = ({ project, onClose }: ProjectModalProps) => (
   <motion.div
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
     exit={{ opacity: 0 }}
-    className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 p-4"
+    className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
   >
     <motion.div
-      initial={{ scale: 0.9, y: 20 }}
-      animate={{ scale: 1, y: 0 }}
-      exit={{ scale: 0.9, y: 20 }}
-      className="bg-black border border-green-700 rounded-lg p-6 md:p-8 w-full max-w-3xl text-white relative overflow-y-auto max-h-[90vh]"
+      initial={{ scale: 0.95, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      exit={{ scale: 0.95, opacity: 0 }}
+      transition={{ duration: 0.3, ease: 'easeOut' }}
+      className="bg-[#0A0A0A] border border-green-400/30 rounded-lg p-8 w-full max-w-4xl text-white relative overflow-y-auto max-h-[90vh] font-mono"
     >
-      <button
-        onClick={onClose}
-        className="absolute top-2 right-2 md:top-4 md:right-4 text-gray-500 hover:text-green-400 transition-colors duration-300 text-2xl"
-      >
-        &times;
-      </button>
-      <h2 className="text-2xl md:text-3xl font-bold mb-2 text-green-400" style={{ textShadow: '0 0 5px rgba(0,255,0,0.7)' }}>{project.title}</h2>
-      <p className="text-md md:text-lg mb-4 text-gray-400" style={{ textShadow: '0 0 3px rgba(0,255,0,0.5)' }}>{project.type} ({project.year})</p>
-
-      <div className="mb-4 text-gray-300 text-sm md:text-base">
-        <p><span className="font-bold">Status:</span> {project.status}</p>
-        <p><span className="font-bold">Web Dev:</span> {project.webDeveloper}</p>
-        <p><span className="font-bold">UI/UX:</span> {project.uiUxDesigner}</p>
-      </div>
-
-      <p className="text-sm md:text-base leading-relaxed text-gray-300 mb-6">{project.description}</p>
+      <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors text-2xl">&times;</button>
+      <h2 className="text-3xl font-bold mb-1 text-green-400">{project.title}</h2>
+      <p className="text-lg mb-6 text-white/60">{project.type} ({project.year})</p>
       
-      <div className="mb-6">
-        <h3 className="font-bold mb-2 text-gray-400 text-sm uppercase tracking-wider">Skills Acquired</h3>
-        <div className="flex flex-wrap gap-2">
-          {project.skills.map((skill, index) => (
-            <span key={index} className="bg-gray-800 text-green-400 text-xs font-medium px-2.5 py-1 rounded-full">
-              {skill}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      <div className="mb-6">
-          <h3 className="font-bold mb-2 text-gray-400 text-sm uppercase tracking-wider">Project Links</h3>
-          <div className="flex flex-wrap gap-4 items-center">
-              {project.links.map((link, index) => (
-                  <a 
-                      key={index} 
-                      href={link.url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-green-400 hover:underline transition-colors duration-300"
-                  >
-                      {link.label} &rarr;
-                  </a>
-              ))}
-          </div>
-      </div>
+      <p className="text-base leading-relaxed text-white/80 mb-6">{project.description}</p>
       
-      <div>
-        <h3 className="font-bold mb-3 text-gray-400 text-sm uppercase tracking-wider">Gallery</h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {project.images.map((img, index) => (
-            <img key={index} src={img} alt={`${project.title} screenshot ${index + 1}`} className="w-full h-auto rounded-md object-cover border border-gray-800" />
-          ))}
-        </div>
+      <h3 className="font-bold mb-3 text-white/60 text-sm uppercase tracking-wider">Skills Acquired</h3>
+      <div className="flex flex-wrap gap-2 mb-6">
+        {project.skills.map(skill => <span key={skill} className="bg-green-400/10 text-green-300 text-xs px-3 py-1 rounded-full">{skill}</span>)}
       </div>
 
+      <h3 className="font-bold mb-3 text-white/60 text-sm uppercase tracking-wider">Project Links</h3>
+      <div className="flex flex-wrap gap-4 items-center mb-6">
+        {project.links.map(link => (
+          <a key={link.label} href={link.url} target="_blank" rel="noopener noreferrer" className="text-green-400 hover:underline">{link.label} &rarr;</a>
+        ))}
+      </div>
+
+      <h3 className="font-bold mb-3 text-white/60 text-sm uppercase tracking-wider">Gallery</h3>
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        {project.images.map((img, index) => (
+          <img key={index} src={img} alt={`${project.title} screenshot ${index + 1}`} className="w-full h-auto rounded-md object-cover border border-white/10" />
+        ))}
+      </div>
     </motion.div>
   </motion.div>
 );
 
-
-// Certificate modal to display detailed certificate info
 const CertificateModal = ({ certificate, onClose }: CertificateModalProps) => (
-  <motion.div
+    <motion.div
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
     exit={{ opacity: 0 }}
-    className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 p-4"
+    className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
   >
     <motion.div
-      initial={{ scale: 0.9, y: 20 }}
-      animate={{ scale: 1, y: 0 }}
-      exit={{ scale: 0.9, y: 20 }}
-      className="bg-black border border-green-700 rounded-lg p-6 md:p-8 w-full max-w-xl text-white relative overflow-y-auto max-h-[90vh]"
+      initial={{ scale: 0.95, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      exit={{ scale: 0.95, opacity: 0 }}
+      transition={{ duration: 0.3, ease: 'easeOut' }}
+      className="bg-[#0A0A0A] border border-green-400/30 rounded-lg p-8 w-full max-w-2xl text-white relative overflow-y-auto max-h-[90vh] font-mono"
     >
-      <button
-        onClick={onClose}
-        className="absolute top-2 right-2 md:top-4 md:right-4 text-gray-500 hover:text-green-400 transition-colors duration-300 text-2xl"
-      >
-        &times;
-      </button>
-      <img src={certificate.imageUrl} alt={`Sertifikat ${certificate.name}`} className="w-full rounded-lg mb-4" />
-      <h2 className="text-2xl md:text-3xl font-bold mb-2 text-green-400" style={{ textShadow: '0 0 5px rgba(0,255,0,0.7)' }}>{certificate.name}</h2>
-      <div className="mb-4 text-gray-300 text-sm md:text-base">
-        <p><span className="font-bold">Institution:</span> {certificate.institution}</p>
-        <p><span className="font-bold">Year:</span> {certificate.year}</p>
-      </div>
+      <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors text-2xl">&times;</button>
+      <img src={certificate.imageUrl} alt={`Sertifikat ${certificate.name}`} className="w-full rounded-lg mb-6 border border-white/10" />
+      <h2 className="text-2xl font-bold mb-2 text-green-400">{certificate.name}</h2>
+      <p className="text-lg text-white/60">{certificate.institution} ({certificate.year})</p>
     </motion.div>
   </motion.div>
 );
 
-// Pagination Controls component
-const PaginationControls = ({ page, totalPages, handlePrev, handleNext }: PaginationControlsProps) => {
-  const buttonVariants = {
-    rest: { opacity: 0.7, x: 0 },
-    hover: { opacity: 1, x: 0 },
-  };
+// =============================================================
+// === CONTENT SECTION COMPONENTS ===
+// =============================================================
 
-  const arrowVariants = {
-    rest: { x: 0 },
-    hover: { x: 5 },
-  };
-
+const ProjectListItem = ({ project, onClick }: { project: Project, onClick: (p: Project) => void }) => {
+  const [isHovered, setIsHovered] = useState(false);
   return (
-    <div className="flex justify-between mt-4 mb-8">
-      <motion.button
-        className="text-gray-400 hover:text-white transition-colors duration-300 flex items-center space-x-2 group"
-        onClick={handlePrev}
-        disabled={page === 0}
-        initial="rest"
-        whileHover="hover"
-        animate="rest"
-      >
-        <motion.span
-          variants={{...arrowVariants, hover: { x: -5 }}}
-          transition={{ duration: 0.3, ease: 'easeInOut' }}
-        >
-          ←
-        </motion.span>
-        <motion.span variants={buttonVariants}>
-          PREV
-        </motion.span>
-      </motion.button>
-      
-      <span className="text-gray-500">
-        {page + 1} / {totalPages}
-      </span>
-      
-      <motion.button
-        className="text-gray-400 hover:text-white transition-colors duration-300 flex items-center space-x-2 group"
-        onClick={handleNext}
-        disabled={page === totalPages - 1}
-        initial="rest"
-        whileHover="hover"
-        animate="rest"
-      >
-        <motion.span variants={buttonVariants}>
-          NEXT
-        </motion.span>
-        <motion.span
-          variants={arrowVariants}
-          transition={{ duration: 0.3, ease: 'easeInOut' }}
-        >
-          →
-        </motion.span>
-      </motion.button>
-    </div>
-  );
-};
-
-// Section for displaying Projects
-const ProjectSection = ({ handleProjectClick }: ProjectSectionProps) => {
-  const itemsPerPage = 3;
-  const [page, setPage] = useState(0);
-
-  const startIndex = page * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const totalPages = Math.ceil(projects.length / itemsPerPage);
-
-  const handleNext = () => setPage((prev) => Math.min(prev + 1, totalPages - 1));
-  const handlePrev = () => setPage((prev) => Math.max(prev - 1, 0));
-
-  return (
-    <motion.section
-      key="projects-section"
+    <motion.div
+      className="group relative cursor-pointer py-6 border-b border-white/10"
+      onClick={() => onClick(project)}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <PaginationControls
-        page={page}
-        totalPages={totalPages}
-        handlePrev={handlePrev}
-        handleNext={handleNext}
-      />
-
-      <div className="hidden md:grid grid-cols-12 gap-4 pb-2 border-b border-gray-700 text-gray-500">
-        <div className="col-span-4">PROJECT</div>
-        <div className="col-span-2">TYPE</div>
-        <div className="col-span-2">STATUS</div>
-        <div className="col-span-4">CREDITS</div>
+      <div className="flex justify-between items-center">
+        <div>
+          <h3 className="text-2xl text-white/80 group-hover:text-white transition-colors duration-300">{project.title}</h3>
+          <p className="text-base text-white/40 group-hover:text-white/60 transition-colors duration-300">{project.type} // {project.year}</p>
+        </div>
+        <motion.span className="text-3xl text-green-400 transition-transform duration-300" animate={{ x: isHovered ? 10 : 0 }}>→</motion.span>
       </div>
-      {projects.slice(startIndex, endIndex).map((project, index) => (
-        <motion.div
-          key={project.title}
-          className="group py-6 border-b border-gray-800 cursor-pointer transition-colors duration-300 hover:border-green-400"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.3, delay: index * 0.1 }}
-          onClick={() => handleProjectClick(project)}
-        >
-          <div className="md:grid md:grid-cols-12 md:gap-4 items-center">
-            <div className="col-span-4 flex items-center">
-              <span
-                className="font-bold text-xl md:text-3xl group-hover:text-green-400 transition-colors duration-300"
-                style={{ textShadow: '0 0 5px rgba(0,255,0,0.7)' }}
-              >
-                {project.title}
-              </span>
-              <span className="ml-4 text-gray-500 text-lg transition-transform duration-300 group-hover:translate-x-2">
-                →
-              </span>
-            </div>
-            <span className="hidden md:inline col-span-2 text-gray-500">{project.type}</span>
-            <span className="hidden md:inline col-span-2 text-gray-500">{project.status}</span>
-            <span className="hidden md:inline col-span-4 text-gray-500">
-              <p>Web Dev: {project.webDeveloper}</p>
-              <p>UI/UX: {project.uiUxDesigner}</p>
-            </span>
-            <div className="md:hidden mt-2 text-sm text-gray-500">
-              <p><span className="text-white font-bold">Type:</span> {project.type}</p>
-              <p><span className="text-white font-bold">Status:</span> {project.status}</p>
-              <p><span className="text-white font-bold">Web Dev:</span> {project.webDeveloper}</p>
-              <p><span className="text-white font-bold">UI/UX:</span> {project.uiUxDesigner}</p>
-            </div>
-          </div>
-        </motion.div>
-      ))}
-    </motion.section>
+      <motion.div
+        className="absolute bottom-0 left-0 h-px bg-green-400"
+        initial={{ scaleX: 0 }}
+        animate={{ scaleX: isHovered ? 1 : 0 }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
+        style={{ originX: 0 }}
+      />
+    </motion.div>
   );
 };
 
-// Section for displaying Certificates
-const CertificatesSection = ({ handleCertificateClick }: CertificatesSectionProps) => {
-  const itemsPerPage = 3;
-  const [page, setPage] = useState(0);
-
-  const startIndex = page * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const totalPages = Math.ceil(certificates.length / itemsPerPage);
-
-  const handleNext = () => setPage((prev) => Math.min(prev + 1, totalPages - 1));
-  const handlePrev = () => setPage((prev) => Math.max(prev - 1, 0));
-
-  return (
-    <motion.section
-      key="certificates-section"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      <PaginationControls
-        page={page}
-        totalPages={totalPages}
-        handlePrev={handlePrev}
-        handleNext={handleNext}
-      />
-
-      <div className="hidden md:grid grid-cols-12 gap-4 pb-2 border-b border-gray-700 text-gray-500">
-        <div className="col-span-6">CERTIFICATE NAME</div>
-        <div className="col-span-4">INSTITUTION</div>
-        <div className="col-span-2">YEAR</div>
-      </div>
-      {certificates.slice(startIndex, endIndex).map((cert, index) => (
-        <motion.div
-          key={cert.name}
-          className="py-6 border-b border-gray-800 cursor-pointer transition-colors duration-300 hover:border-green-400"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: index * 0.1 }}
-          onClick={() => handleCertificateClick(cert)}
-        >
-          <div className="md:grid md:grid-cols-12 md:gap-4 items-center">
-            <span
-              className="col-span-6 font-bold text-lg md:text-xl text-white"
-              style={{ textShadow: '0 0 5px rgba(0,255,0,0.7)' }}
-            >
-              {cert.name}
-            </span>
-            <span className="hidden md:inline col-span-4 text-gray-500">{cert.institution}</span>
-            <span className="hidden md:inline col-span-2 text-gray-500">{cert.year}</span>
-            <div className="md:hidden mt-2 text-sm text-gray-500">
-                <p><span className="text-white font-bold">Institution:</span> {cert.institution}</p>
-                <p><span className="text-white font-bold">Year:</span> {cert.year}</p>
-            </div>
-          </div>
-        </motion.div>
-      ))}
-    </motion.section>
-  );
-};
-
-// Section for Contact information
-const ContactSection = () => (
-  <motion.section
-    key="contact-section"
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    exit={{ opacity: 0 }}
-    transition={{ duration: 0.5 }}
-  >
-    <div className="max-w-3xl">
-      <h2 className="text-2xl md:text-3xl font-bold mb-4" style={{ textShadow: '0 0 5px rgba(0,255,0,0.7)' }}>Contact Me</h2>
-      <p className="text-base md:text-lg leading-relaxed text-gray-400 whitespace-pre-line">{contactDetails}</p>
-    </div>
-  </motion.section>
+const ProjectSection = ({ handleProjectClick }: ProjectSectionProps) => (
+  <motion.div key="projects" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.4 }}>
+    {/* FIX: Menggunakan project.title sebagai key unik */}
+    {projects.map(project => <ProjectListItem key={project.title} project={project} onClick={handleProjectClick} />)}
+  </motion.div>
 );
 
-// ==================== Main App Component ====================
+const CertificatesSection = ({ handleCertificateClick }: CertificatesSectionProps) => (
+  <motion.div key="certificates" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.4 }}>
+    {certificates.map(cert => (
+      // FIX: Menggunakan cert.name sebagai key unik
+      <motion.div
+        key={cert.name}
+        className="group relative cursor-pointer py-6 border-b border-white/10"
+        onClick={() => handleCertificateClick(cert)}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="flex justify-between items-center">
+          <div>
+            <h3 className="text-xl text-white/80 group-hover:text-white transition-colors">{cert.name}</h3>
+            <p className="text-base text-white/40 group-hover:text-white/60 transition-colors">{cert.institution} // {cert.year}</p>
+          </div>
+        </div>
+      </motion.div>
+    ))}
+  </motion.div>
+);
+
+const ContactSection = () => (
+  <motion.div key="contact" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.4 }}>
+    <h2 className="text-4xl text-white font-bold mb-4 tracking-wider">Get In Touch</h2>
+    <p className="text-lg leading-relaxed text-white/70 whitespace-pre-line max-w-2xl">{contactDetails}</p>
+  </motion.div>
+);
+
+// =============================================================
+// === MAIN HOMEPAGE COMPONENT ===
+// =============================================================
 export default function Homepage() {
   const [activeSection, setActiveSection] = useState('projects');
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [selectedCertificate, setSelectedCertificate] = useState<Certificate | null>(null);
+  const [currentTime, setCurrentTime] = useState("");
 
-  const handleProjectClick = (project: Project) => setSelectedProject(project);
-  const handleCertificateClick = (certificate: Certificate) => setSelectedCertificate(certificate);
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date().toLocaleTimeString('en-GB', { timeZone: 'Asia/Jakarta' })), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const navItems = [
     { name: 'Projects', id: 'projects' },
@@ -365,62 +211,68 @@ export default function Homepage() {
   return (
     <motion.main
       initial={{ opacity: 0 }}
-      animate={{ opacity: 1, transition: { duration: 0.5 } }}
-      className="min-h-screen w-full bg-black text-white p-4 md:p-16 max-h-screen relative overflow-hidden"
-      style={{ fontFamily: "'Roboto Mono', monospace" }}
+      animate={{ opacity: 1, transition: { duration: 0.8 } }}
+      className="min-h-screen w-full bg-black text-white/90 font-mono relative"
     >
+      <GridBackground />
+      <SubtleDataStream />
+      <div className="absolute inset-0 bg-black/80 z-0" />
+      
       <style>{`
-        @keyframes grain-animation {
-          0%, 100% { transform: translate(0, 0); } 10% { transform: translate(-1%, -1%); } 20% { transform: translate(-2%, 2%); } 30% { transform: translate(1%, -2%); } 40% { transform: translate(-2%, 1%); } 50% { transform: translate(2%, -1%); } 60% { transform: translate(-1%, 2%); } 70% { transform: translate(2%, 1%); } 80% { transform: translate(-2%, -2%); } 90% { transform: translate(1%, 2%); }
-        }
-        @keyframes flicker-animation {
-          0%, 100% { opacity: 1; } 41.99% { opacity: 1; } 42% { opacity: 0.8; } 42.01% { opacity: 1; } 44.99% { opacity: 1; } 45% { opacity: 0.8; } 45.01% { opacity: 1; } 48.99% { opacity: 1; } 49% { opacity: 0.8; } 49.01% { opacity: 1; }
-        }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #39FF14; border-radius: 3px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #fff; }
       `}</style>
 
-      {/* Retro Computer Overlay Effects */}
-      <div className="fixed inset-0 z-10 pointer-events-none" style={{ backgroundImage: 'url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAACCAYAAACZgbYnAAAAAXNSR0IArs4c6QAAABJJREFUGFdjYGBgYGEAAgwMDDLAwAAAL0gC/x0fP1cAAAAASUVORK5CYII=")', backgroundSize: '1px 2px', opacity: 0.05, animation: 'grain-animation 0.2s steps(2) infinite' }}></div>
-      <div className="fixed inset-0 z-10 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06))', backgroundSize: '100% 2px, 3px 100%', opacity: 0.1 }}></div>
-      <div className="fixed inset-0 z-10 pointer-events-none bg-transparent" style={{ animation: 'flicker-animation 2s infinite' }}></div>
-
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto relative z-20" style={{ boxShadow: 'inset 0px 0px 100px rgba(0,0,0,0.6)' }}>
-        <header className="flex flex-col md:flex-row justify-between items-center mb-8 md:mb-12 border-b border-gray-800 pb-4">
-          <h1 className="text-xl md:text-2xl mb-4 md:mb-0" style={{ textShadow: '0 0 5px rgba(0,255,0,0.7)' }}>STEVEN MULYA TJENDRATAMA</h1>
+      <motion.div 
+        className="relative z-10 grid grid-cols-1 md:grid-cols-4 min-h-screen"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1, delay: 0.5 }}
+      >
+        
+        {/* === SIDEBAR PERSISTEN === */}
+        <aside className="col-span-1 p-8 border-r border-green-400/20 flex flex-col justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-wider text-white">STEVEN MULYA</h1>
+            <p className="text-sm text-green-400 tracking-[0.2em]">NODE: SMT-01</p>
+            <motion.div className="mt-4 h-px w-full bg-green-400/30" initial={{scaleX:0}} animate={{scaleX:1}} transition={{duration:0.8, delay: 0.5}} style={{transformOrigin: 'left'}}/>
+          </div>
           <nav>
-            <ul className="flex space-x-4 md:space-x-8">
-              {navItems.map((item) => (
+            <ul className="flex flex-col space-y-4">
+              {navItems.map(item => (
                 <li key={item.id}>
-                  <button
-                    onClick={() => setActiveSection(item.id)}
-                    className={`group relative inline-block text-lg md:text-xl transition-colors duration-300 ${
-                      activeSection === item.id ? 'text-green-400' : 'text-gray-400 hover:text-white'
-                    }`}
-                  >
-                    {item.name}
-                    <motion.div
-                      className="absolute bottom-[-4px] left-0 w-full h-[2px] bg-green-400"
-                      initial={{ scaleX: 0 }}
-                      animate={{ scaleX: activeSection === item.id ? 1 : 0 }}
-                      transition={{ duration: 0.3 }}
-                      style={{ originX: 0.5 }}
-                    />
+                  <button onClick={() => setActiveSection(item.id)} className="group relative flex items-center text-xl w-full text-left">
+                    <AnimatePresence>
+                      {activeSection === item.id && (
+                        <motion.span className="absolute -left-5 text-green-400 text-2xl" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}>[</motion.span>
+                      )}
+                    </AnimatePresence>
+                    <span className={`transition-colors duration-300 ${activeSection === item.id ? 'text-white' : 'text-white/50 hover:text-white'}`}>{item.name}</span>
                   </button>
                 </li>
               ))}
             </ul>
           </nav>
-        </header>
+          <div className="text-xs text-white/40 space-y-1">
+            <p>STATUS: <span className="text-green-400">SECURE</span></p>
+            <p>LOCATION: TGR-IDN</p>
+            <p>SESSION TIME: {currentTime}</p>
+          </div>
+        </aside>
 
-        {/* Dynamic Content Sections */}
-        <AnimatePresence mode="wait">
-          {activeSection === 'projects' && <ProjectSection handleProjectClick={handleProjectClick} />}
-          {activeSection === 'certificates' && <CertificatesSection handleCertificateClick={handleCertificateClick} />}
-          {activeSection === 'contact' && <ContactSection />}
-        </AnimatePresence>
-      </div>
+        {/* === PANEL KONTEN UTAMA === */}
+        <div className="col-span-1 md:col-span-3 p-8 overflow-y-auto custom-scrollbar" style={{ maxHeight: '100vh' }}>
+          <AnimatePresence mode="wait">
+            {activeSection === 'projects' && <ProjectSection handleProjectClick={setSelectedProject} />}
+            {activeSection === 'certificates' && <CertificatesSection handleCertificateClick={setSelectedCertificate} />}
+            {activeSection === 'contact' && <ContactSection />}
+          </AnimatePresence>
+        </div>
+      </motion.div>
 
-      {/* Modals for Details */}
+      {/* Modals */}
       <AnimatePresence>
         {selectedProject && <ProjectModal project={selectedProject} onClose={() => setSelectedProject(null)} />}
         {selectedCertificate && <CertificateModal certificate={selectedCertificate} onClose={() => setSelectedCertificate(null)} />}
