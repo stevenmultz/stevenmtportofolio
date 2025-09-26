@@ -35,8 +35,9 @@ export default function StartPage({ onEnter }: StartPageProps) {
       particles.length = 0;
       const particleCount = (canvas.width * canvas.height) / 9000;
       for (let i = 0; i < particleCount; i++) {
-        let x = Math.random() * canvas.width;
-        let y = Math.random() * canvas.height;
+        // FIX: Mengganti 'let' menjadi 'const'
+        const x = Math.random() * canvas.width;
+        const y = Math.random() * canvas.height;
         particles.push(new Particle(x, y));
       }
     };
@@ -54,20 +55,12 @@ export default function StartPage({ onEnter }: StartPageProps) {
       x: number; y: number; size: number; baseX: number; baseY: number; density: number; color: string;
       constructor(x: number, y: number) { this.x = x; this.y = y; this.size = Math.random() * 1.5 + 1; this.baseX = this.x; this.baseY = this.y; this.density = (Math.random() * 30) + 1; this.color = 'rgba(57, 255, 20, 0.8)'; }
       draw() { if (!ctx) return; ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.closePath(); ctx.fill(); }
-      
       update() {
-        // FIX: Mengganti semua 'let' menjadi 'const' karena nilai tidak diubah
-        const dx = mouse.x - this.x;
-        const dy = mouse.y - this.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        const forceDirectionX = dx / distance;
-        const forceDirectionY = dy / distance;
-        const maxDistance = mouse.radius;
-        const force = (maxDistance - distance) / maxDistance;
-        const directionX = forceDirectionX * force * this.density;
-        const directionY = forceDirectionY * force * this.density;
-
-        if (distance < mouse.radius) { this.x -= directionX; this.y -= directionY;
+        const dx = mouse.x - this.x; const dy = mouse.y - this.y; const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance < mouse.radius) {
+          const forceDirectionX = dx / distance; const forceDirectionY = dy / distance; const maxDistance = mouse.radius; const force = (maxDistance - distance) / maxDistance;
+          const directionX = forceDirectionX * force * this.density; const directionY = forceDirectionY * force * this.density;
+          this.x -= directionX; this.y -= directionY;
         } else {
           if (this.x !== this.baseX) { const dx = this.x - this.baseX; this.x -= dx / 10; }
           if (this.y !== this.baseY) { const dy = this.y - this.baseY; this.y -= dy / 10; }
@@ -77,13 +70,11 @@ export default function StartPage({ onEnter }: StartPageProps) {
 
     const connect = () => {
       if (!ctx || !canvas) return;
-      let opacityValue = 1; // let di sini oke karena nilainya bisa berubah dalam loop
       for (let a = 0; a < particles.length; a++) {
         for (let b = a; b < particles.length; b++) {
-          const distance = ((particles[a].x - particles[b].x) * (particles[a].x - particles[b].x))
-                       + ((particles[a].y - particles[b].y) * (particles[a].y - particles[b].y));
+          const distance = ((particles[a].x - particles[b].x) * (particles[a].x - particles[b].x)) + ((particles[a].y - particles[b].y) * (particles[a].y - particles[b].y));
           if (distance < (canvas.width / 7) * (canvas.height / 7)) {
-            opacityValue = 1 - (distance / 20000);
+            const opacityValue = 1 - (distance / 20000);
             ctx.strokeStyle = `rgba(57, 255, 20, ${opacityValue})`;
             ctx.lineWidth = 0.5;
             ctx.beginPath();
@@ -98,10 +89,7 @@ export default function StartPage({ onEnter }: StartPageProps) {
     const animate = () => {
       if (!ctx) return;
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-      for (let i = 0; i < particles.length; i++) {
-        particles[i].update();
-        particles[i].draw();
-      }
+      particles.forEach(p => { p.update(); p.draw(); });
       connect();
       animationFrameId = requestAnimationFrame(animate);
     };
@@ -120,23 +108,11 @@ export default function StartPage({ onEnter }: StartPageProps) {
   };
 
   return (
-    <motion.div
-      exit={{ opacity: 0, transition: { duration: 1.5 } }}
-      className="fixed inset-0 z-40 bg-black flex items-center justify-center font-mono"
-    >
+    <motion.div exit={{ opacity: 0, transition: { duration: 1.5 } }} className="fixed inset-0 z-40 bg-black flex items-center justify-center font-mono">
       <canvas ref={canvasRef} className="absolute inset-0 z-0" />
-      <motion.div 
-        className="relative z-10 flex flex-col items-center"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1.5, delay: 0.5 }}
-      >
-        <h1 className="text-4xl md:text-5xl font-bold uppercase tracking-wider text-white/90 text-center">
-          STEVEN MULYA TJENDRATAMA
-        </h1>
-        <p className="mt-4 text-lg tracking-[0.2em] text-white/60">
-          SOFTWARE ENGINEER
-        </p>
+      <motion.div className="relative z-10 flex flex-col items-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1.5, delay: 0.5 }}>
+        <h1 className="text-4xl md:text-5xl font-bold uppercase tracking-wider text-white/90 text-center">STEVEN MULYA TJENDRATAMA</h1>
+        <p className="mt-4 text-lg tracking-[0.2em] text-white/60">SOFTWARE ENGINEER</p>
         <motion.div
           onClick={onEnter}
           onMouseEnter={() => setIsHovered(true)}
@@ -146,11 +122,7 @@ export default function StartPage({ onEnter }: StartPageProps) {
           animate={{ opacity: 1 }}
           transition={{ delay: 1, duration: 1 }}
         >
-          <motion.span 
-            className={`text-2xl tracking-[0.4em] transition-colors duration-300 ${isHovered ? 'text-white' : 'text-green-400'}`}
-          >
-            ENTER
-          </motion.span>
+          <motion.span className={`text-2xl tracking-[0.4em] transition-colors duration-300 ${isHovered ? 'text-white' : 'text-green-400'}`}>ENTER</motion.span>
           <div className="absolute bottom-4 w-32 h-px"><motion.div className="absolute inset-0 bg-green-400" style={{ originX: 0.5 }} variants={lineVariants} initial="rest" animate={isHovered ? "hover" : "rest"} /></div>
           <div className="absolute top-4 w-32 h-px"><motion.div className="absolute inset-0 bg-green-400" style={{ originX: 0.5 }} variants={lineVariants} initial="rest" animate={isHovered ? "hover" : "rest"} /></div>
         </motion.div>
