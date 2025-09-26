@@ -50,7 +50,6 @@ const SubtleDataStream = () => {
   );
 };
 
-
 // =============================================================
 // === MODAL COMPONENTS ===
 // =============================================================
@@ -69,13 +68,9 @@ const ProjectModal = ({ project, onClose }: ProjectModalProps) => (
       <p className="text-md md:text-lg mb-6 text-white/60">{project.type} ({project.year})</p>
       <p className="text-base leading-relaxed text-white/80 mb-6">{project.description}</p>
       <h3 className="font-bold mb-3 text-white/60 text-sm uppercase tracking-wider">Skills Acquired</h3>
-      <div className="flex flex-wrap gap-2 mb-6">
-        {project.skills.map(skill => <span key={skill} className="bg-green-400/10 text-green-300 text-xs px-3 py-1 rounded-full">{skill}</span>)}
-      </div>
+      <div className="flex flex-wrap gap-2 mb-6">{project.skills.map(skill => <span key={skill} className="bg-green-400/10 text-green-300 text-xs px-3 py-1 rounded-full">{skill}</span>)}</div>
       <h3 className="font-bold mb-3 text-white/60 text-sm uppercase tracking-wider">Project Links</h3>
-      <div className="flex flex-wrap gap-4 items-center mb-6">
-        {project.links.map(link => <a key={link.label} href={link.url} target="_blank" rel="noopener noreferrer" className="text-green-400 hover:underline">{link.label} &rarr;</a>)}
-      </div>
+      <div className="flex flex-wrap gap-4 items-center mb-6">{project.links.map(link => <a key={link.label} href={link.url} target="_blank" rel="noopener noreferrer" className="text-green-400 hover:underline">{link.label} &rarr;</a>)}</div>
       <h3 className="font-bold mb-3 text-white/60 text-sm uppercase tracking-wider">Gallery</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {project.images.map((img, index) => (
