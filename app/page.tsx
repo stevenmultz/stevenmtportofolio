@@ -122,7 +122,6 @@ export default function HomePage() {
         if (!isPoweredOn || isBooting) return;
         if (action === 'SELECT') {
             playSelect();
-            // ** PERBAIKAN: Mengganti 'as any' dengan tipe yang lebih spesifik **
             if (section === 'MENU') setSection(menuItems[listIndex] as 'PROJECTS' | 'CERTIFICATES' | 'CONTACT');
             else if (dataList.length > 0) setSelectedItem(dataList[listIndex]);
         } else if (action === 'BACK') {
