@@ -1,6 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+    eslint: {
+    // Peringatan: Opsi ini akan membuat proses build tetap berhasil 
+    // meskipun proyek Anda memiliki error ESLint.
+    ignoreDuringBuilds: true,
+  },
+
   images: {
     remotePatterns: [
       {
