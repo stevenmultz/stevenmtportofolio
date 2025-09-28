@@ -1,292 +1,170 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import Image from 'next/image';
+import { motion, AnimatePresence, useMotionValue, animate } from 'framer-motion';
 import { projects, certificates, contactDetails, Project, Certificate } from '@/app/data/portfolioData';
+import { useSound } from '@/app/hooks/useSound';
 
-// =================================================================
-// === STAGE 1: BOOT SEQUENCE COMPONENT (Loading Page)           ===
-// =================================================================
-const bootSequenceSteps = [
-  "INITIALIZING BIOS...", "MEMORY CHECK: 256TB RAM... OK", "DETECTING STORAGE ARRAY... ONLINE",
-  "LOADING KERNEL v2.5.25...", "MOUNTING FILE SYSTEMS...", "VIRTUAL CORE CALIBRATION... COMPLETE",
-  "ACCESSING NEURAL INTERFACE...", "AUTHENTICATION SECURE...", "AWAITING OPERATOR INPUT."
-];
+// --- TYPE GUARD ---
+const isProject = (item: Project | Certificate): item is Project => 'skills' in item;
 
-const asciiLogo = `
-███╗   ███╗████████╗
-████╗ ████║╚══██╔══╝
-██╔████╔██║   ██║   
-██║╚██╔╝██║   ██║   
-██║ ╚═╝ ██║   ██║   
-╚═╝     ╚═╝   ╚═╝   
-`;
+// --- LOADING SCREEN COMPONENT ---
+const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
+    const asciiLogo = `
+      ███████╗███╗   ███╗████████╗
+     ██╔════╝████╗ ████║╚══██╔══╝
+     ███████╗██╔████╔██║   ██║   
+     ╚════██║██║╚██╔╝██║   ██║   
+     ███████║██║ ╚═╝ ██║   ██║   
+     ╚══════╝╚═╝     ╚═╝   ╚═╝   
+    `;
+    useEffect(() => {
+        const timer = setTimeout(onComplete, 2800);
+        return () => clearTimeout(timer);
+    }, [onComplete]);
 
-const BootSequence = ({ onComplete }: { onComplete: () => void }) => {
-  const [log, setLog] = useState<string[]>([]);
-  const [stepIndex, setStepIndex] = useState(0);
-
-  useEffect(() => {
-    if (stepIndex < bootSequenceSteps.length) {
-      const timeout = setTimeout(() => {
-        setLog(prev => [...prev, bootSequenceSteps[stepIndex]]);
-        setStepIndex(stepIndex + 1);
-      }, Math.random() * 150 + 50);
-      return () => clearTimeout(timeout);
-    } else {
-      const finalTimeout = setTimeout(onComplete, 1500);
-      return () => clearTimeout(finalTimeout);
-    }
-  }, [stepIndex, onComplete]);
-
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4">
-      <div className="w-full max-w-4xl">
-        {log.map((line, index) => (
-          <p key={index} className="text-lg crt-text">&gt; {line}</p>
-        ))}
-      </div>
-      {stepIndex >= bootSequenceSteps.length && (
-        <motion.pre
-          className="text-center text-xs md:text-sm crt-text mt-8"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 0.5 }}
-        >
-          {asciiLogo}
-        </motion.pre>
-      )}
-    </div>
-  );
-};
-
-// =============================================================
-// === STAGE 2: LOGIN PROMPT COMPONENT (Start Page)          ===
-// =============================================================
-const LoginPrompt = ({ onSuccess }: { onSuccess: () => void }) => {
-  const [input, setInput] = useState('');
-  const [log, setLog] = useState<string[]>(['Type "start" to power on the system.']);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const handleCommand = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key !== 'Enter') return;
-    
-    const command = input.trim().toLowerCase();
-    const newLog = [...log, `> ${command}`];
-
-    if (command === 'start') {
-      newLog.push('SYSTEM POWER ON. LOADING INTERFACE...');
-      setLog(newLog);
-      setTimeout(onSuccess, 1500);
-    } else {
-      newLog.push(`COMMAND NOT RECOGNIZED: "${command}"`);
-      setLog(newLog);
-    }
-    setInput('');
-  };
-
-  useEffect(() => { inputRef.current?.focus(); }, []);
-
-  return (
-    <motion.div
-      className="flex flex-col items-center justify-center min-h-screen p-4"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 1.5 }}
-    >
-      <div className="w-full max-w-3xl h-64 text-lg">
-        {log.map((line, index) => <p key={index} className="crt-text">{line}</p>)}
-      </div>
-      <div className="flex items-center text-xl mt-4 w-full max-w-3xl">
-        <span className="crt-text">&gt;&nbsp;</span>
-        <input
-          ref={inputRef}
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleCommand}
-          className="flex-grow bg-transparent border-none outline-none crt-text"
-          autoFocus
-        />
-        <span className="blinking-cursor crt-text">_</span>
-      </div>
-    </motion.div>
-  );
-};
-
-// =================================================================
-// === STAGE 3: THE NEW ANALOG CONTROLLER INTERFACE              ===
-// =================================================================
-const AnalogController = () => {
-  const [section, setSection] = useState<'PROJECTS' | 'CERTIFICATES' | 'CONTACT'>('PROJECTS');
-  const [listIndex, setListIndex] = useState(0);
-  const [selectedItem, setSelectedItem] = useState<Project | Certificate | null>(null);
-
-  const listData = useMemo(() => {
-    switch (section) {
-      case 'PROJECTS': return projects;
-      case 'CERTIFICATES': return certificates;
-      default: return [];
-    }
-  }, [section]);
-
-  // Reset index when section changes or when returning to list view
-  useEffect(() => { setListIndex(0); }, [section]);
-  useEffect(() => { if (selectedItem === null) setListIndex(0); }, [selectedItem]);
-
-
-  const handleDPad = (direction: 'UP' | 'DOWN' | 'LEFT' | 'RIGHT') => {
-    if (selectedItem) return; // D-pad is disabled when viewing details
-
-    switch (direction) {
-      case 'UP':
-        setListIndex(prev => (prev > 0 ? prev - 1 : listData.length - 1));
-        break;
-      case 'DOWN':
-        setListIndex(prev => (prev < listData.length - 1 ? prev + 1 : 0));
-        break;
-      case 'LEFT':
-        setSection(prev => prev === 'PROJECTS' ? 'CONTACT' : prev === 'CERTIFICATES' ? 'PROJECTS' : 'CERTIFICATES');
-        break;
-      case 'RIGHT':
-        setSection(prev => prev === 'PROJECTS' ? 'CERTIFICATES' : prev === 'CERTIFICATES' ? 'CONTACT' : 'PROJECTS');
-        break;
-    }
-  };
-
-  const handleSelect = () => {
-    if (section !== 'CONTACT' && listData.length > 0) {
-      setSelectedItem(listData[listIndex]);
-    }
-  };
-  
-  const handleBack = () => setSelectedItem(null);
-
-  // Screen Content Rendering
-  const renderScreenContent = () => {
-    if (selectedItem) {
-      // --- DETAIL VIEW ---
-      const isProject = 'skills' in selectedItem;
-      return (
-        <motion.div key="detail" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm md:text-base leading-tight">
-          <pre className="whitespace-pre-wrap font-mono crt-text">
-{`╔═══[ FILE: ${(isProject ? (selectedItem as Project).title : (selectedItem as Certificate).name).toUpperCase()} ]${'═'.repeat(30)}╗
-║
-║  NAME: ${isProject ? (selectedItem as Project).title : (selectedItem as Certificate).name}
-║  TYPE: ${isProject ? (selectedItem as Project).type : (selectedItem as Certificate).institution}
-║  YEAR: ${selectedItem.year}
-${isProject ? `║  STATUS: ${(selectedItem as Project).status}\n` : ''}${isProject ? `║  DESC: ${(selectedItem as Project).description}\n` : ''}${isProject ? `║  SKILLS: ${(selectedItem as Project).skills.join(', ')}\n` : ''}║
-╚${'═'.repeat(60)}╝`}
-          </pre>
-        </motion.div>
-      );
-    }
-
-    if (section === 'CONTACT') {
-      // --- CONTACT VIEW ---
-      return (
-         <motion.div key="contact" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <pre className="whitespace-pre-wrap font-mono crt-text text-base md:text-lg">
-{`╔═══[ CONTACT INFORMATION ]${'═'.repeat(30)}╗
-║
-║  Connect with SMT:
-║
-${contactDetails.trim().split('\n').map(line => `║  ${line.trim()}`).join('\n')}
-║
-╚${'═'.repeat(60)}╝`}
-          </pre>
-        </motion.div>
-      );
-    }
-
-    // --- LIST VIEW ---
-    const VISIBLE_ITEMS = 5;
-    const startIndex = Math.max(0, listIndex - Math.floor(VISIBLE_ITEMS / 2));
-    const visibleList = listData.slice(startIndex, startIndex + VISIBLE_ITEMS);
-    
     return (
-      <motion.div key={section} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-        <div className="text-lg md:text-xl crt-text mb-2">
-          {`// ${section} [${listIndex + 1}/${listData.length}]`}
-        </div>
-        <div className="space-y-1 text-base md:text-lg">
-          {visibleList.map((item, index) => {
-            const actualIndex = startIndex + index;
-            const isSelected = actualIndex === listIndex;
-            return (
-              <p key={'title' in item ? item.title : item.name} className={`transition-colors ${isSelected ? 'bg-green-900/50 crt-text' : 'text-white/40'}`}>
-                {isSelected ? '>' : ' '} {'title' in item ? item.title : item.name}
-              </p>
-            );
-          })}
-        </div>
-      </motion.div>
+        <motion.div
+            className="loading-overlay"
+            exit={{ opacity: 0, transition: { duration: 0.5, ease: "easeInOut" } }}
+        >
+            <motion.pre
+                initial={{ opacity: 0 }}
+                animate={{ opacity: [0, 1, 1, 0] }}
+                transition={{ duration: 2.8, times: [0, 0.2, 0.8, 1], ease: "easeInOut", repeat: Infinity }}
+                className="text-green-500 text-xs md:text-sm crt-text"
+            >
+                {asciiLogo}
+            </motion.pre>
+        </motion.div>
     );
-  };
-  
-  // Controller Component
-  return (
-    <motion.div 
-      className="p-4 w-full min-h-screen flex flex-col items-center justify-center"
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1 }}
-    >
-      <div className="w-full max-w-md md:max-w-lg device-chassis rounded-lg p-4 md:p-6 space-y-4">
-        {/* Screen Area */}
-        <div className="h-80 md:h-96 screen-bezel rounded flex flex-col justify-start">
-          <AnimatePresence mode="wait">
-            {renderScreenContent()}
-          </AnimatePresence>
-        </div>
-        
-        {/* Controls Area */}
-        <div className="grid grid-cols-3 gap-4 items-center pt-4">
-          {/* D-PAD */}
-          <div className="relative w-32 h-32 md:w-36 md:h-36 mx-auto">
-            <button onClick={() => handleDPad('UP')} className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-10 md:w-12 md:h-12 ascii-button flex items-center justify-center text-xl">^</button>
-            <button onClick={() => handleDPad('LEFT')} className="absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 ascii-button flex items-center justify-center text-xl">&lt;</button>
-            <button onClick={() => handleDPad('RIGHT')} className="absolute right-0 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 ascii-button flex items-center justify-center text-xl">&gt;</button>
-            <button onClick={() => handleDPad('DOWN')} className="absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-10 md:w-12 md:h-12 ascii-button flex items-center justify-center text-xl">v</button>
-          </div>
-          
-          {/* Section Indicator */}
-          <div className="text-center">
-            <p className="text-xs text-white/50">SECTION</p>
-            <p className="text-lg md:text-xl crt-text">{section}</p>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex flex-col items-center space-y-4">
-            <button onClick={handleSelect} className="w-20 h-12 md:w-24 md:h-14 ascii-button rounded-full text-lg">SELECT</button>
-            <button onClick={handleBack} className="w-20 h-12 md:w-24 md:h-14 ascii-button rounded-full text-lg">BACK</button>
-          </div>
-        </div>
-      </div>
-    </motion.div>
-  );
 };
 
-// =============================================================
-// === MAIN PAGE CONTROLLER                                  ===
-// =============================================================
+
+// --- MAIN PAGE COMPONENT ---
 export default function HomePage() {
-  const [stage, setStage] = useState<'BOOTING' | 'LOGIN' | 'CONTROLLER'>('BOOTING');
+    const [isLoading, setIsLoading] = useState(true);
+    const [isPoweredOn, setIsPoweredOn] = useState(false);
+    const [isBooting, setIsBooting] = useState(false);
+    const [section, setSection] = useState<'MENU' | 'PROJECTS' | 'CERTIFICATES' | 'CONTACT'>('MENU');
+    const [listIndex, setListIndex] = useState(0);
+    const [selectedItem, setSelectedItem] = useState<Project | Certificate | null>(null);
 
-  const renderStage = () => {
-    switch (stage) {
-      case 'BOOTING':
-        return <BootSequence onComplete={() => setStage('LOGIN')} />;
-      case 'LOGIN':
-        return <LoginPrompt onSuccess={() => setStage('CONTROLLER')} />;
-      case 'CONTROLLER':
-        return <AnalogController />;
-      default:
-        return null;
-    }
-  };
+    const screenContentRef = useRef<HTMLDivElement>(null);
+    const rotateY = useMotionValue(0);
+    const rotateX = useMotionValue(5);
 
-  return (
-    <main className="min-h-screen bg-black font-mono">
-      {renderStage()}
-    </main>
-  );
+    const playNav = useSound('/map.mp3', 0.5);
+    const playSelect = useSound('/map.mp3', 0.8);
+    const playBack = useSound('/map.mp3', 0.6);
+    const playPowerOn = useSound('/map.mp3', 1);
+    const playPowerOff = useSound('/map.mp3', 1);
+
+    const menuItems = useMemo(() => ['PROJECTS', 'CERTIFICATES', 'CONTACT'], []);
+    const dataList = useMemo(() => {
+        if (section === 'PROJECTS') return projects;
+        if (section === 'CERTIFICATES') return certificates;
+        return [];
+    }, [section]);
+
+    useEffect(() => { setListIndex(0); }, [section]);
+    useEffect(() => {
+        if (isBooting) {
+            const timer = setTimeout(() => setIsBooting(false), 1200);
+            return () => clearTimeout(timer);
+        }
+    }, [isBooting]);
+    
+    const handleLoadingComplete = () => setIsLoading(false);
+    
+    const handleWheel = (e: React.WheelEvent) => {
+        if (isLoading) return;
+        const scrollDelta = e.deltaX || e.deltaY;
+        const currentRotation = rotateY.get();
+        const newRotation = currentRotation + scrollDelta * 0.1;
+        const clampedRotation = Math.max(-45, Math.min(45, newRotation));
+        animate(rotateY, clampedRotation, { type: "spring", stiffness: 400, damping: 30, mass: 1 });
+    };
+    const togglePower = useCallback(() => {
+        if (isLoading) return;
+        setIsPoweredOn(prev => {
+            const newState = !prev;
+            if (newState) { playPowerOn(); setIsBooting(true); } 
+            else { playPowerOff(); setSelectedItem(null); setSection('MENU'); }
+            return newState;
+        });
+    }, [isLoading, playPowerOn, playPowerOff]);
+    const handleNavigation = useCallback((direction: 'UP' | 'DOWN') => {
+        if (!isPoweredOn || isBooting) return;
+        playNav();
+        if (selectedItem && screenContentRef.current) {
+            const scrollAmount = 100;
+            screenContentRef.current.scrollBy({ top: direction === 'UP' ? -scrollAmount : scrollAmount, behavior: 'smooth' });
+        } else {
+            const list = section === 'MENU' ? menuItems : dataList;
+            if (direction === 'UP') setListIndex(prev => (prev > 0 ? prev - 1 : list.length - 1));
+            if (direction === 'DOWN') setListIndex(prev => (prev < list.length - 1 ? prev + 1 : 0));
+        }
+    }, [isPoweredOn, isBooting, playNav, selectedItem, section, menuItems, dataList]);
+    const handleAction = useCallback((action: 'SELECT' | 'BACK') => {
+        if (!isPoweredOn || isBooting) return;
+        if (action === 'SELECT') {
+            playSelect();
+            if (section === 'MENU') setSection(menuItems[listIndex] as any);
+            else if (dataList.length > 0) setSelectedItem(dataList[listIndex]);
+        } else if (action === 'BACK') {
+            playBack();
+            if (selectedItem) setSelectedItem(null);
+            else if (section !== 'MENU') setSection('MENU');
+        }
+    }, [isPoweredOn, isBooting, playSelect, playBack, section, menuItems, listIndex, dataList, selectedItem]);
+    
+    const renderScreenContent = () => {
+      if (isBooting) { return ( <motion.div key="booting" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center h-full text-3xl crt-text"><p>SMT-OS v5.1</p><p className="mt-2 text-xl blinking-cursor">BOOTING SYSTEM...</p></motion.div> ); }
+      return ( <AnimatePresence mode="wait"><motion.div key={section + (selectedItem ? (isProject(selectedItem) ? selectedItem.title : selectedItem.name) : '')} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="p-4 w-full h-full" ref={screenContentRef}>{selectedItem ? ( <div> <h2 className="text-2xl underline crt-text">FILE: {isProject(selectedItem) ? selectedItem.title : selectedItem.name}</h2><pre className="mt-4 text-base whitespace-pre-wrap font-mono crt-text">{isProject(selectedItem) ? `TYPE        : ${selectedItem.type}\nYEAR        : ${selectedItem.year}\nSTATUS      : ${selectedItem.status}\nDEVELOPER   : ${selectedItem.webDeveloper}\nDESIGNER    : ${selectedItem.uiUxDesigner}\n\nDESCRIPTION :\n${selectedItem.description}\n\nSKILLS      : ${selectedItem.skills.join(', ')}` : `INSTITUTION : ${selectedItem.institution}\nYEAR        : ${selectedItem.year}`}</pre>{isProject(selectedItem) && selectedItem.images.length > 0 && ( <div className="mt-4"><h3 className="text-lg crt-text">PROJECT GALLERY:</h3><div className="grid grid-cols-2 gap-4 mt-2">{selectedItem.images.map(img => <Image key={img} src={img} alt="Project image" width={300} height={200} className="border-2 border-green-900/50" />)}</div></div> )}{!isProject(selectedItem) && ( <div className="mt-4"><h3 className="text-lg crt-text">CERTIFICATE PROOF:</h3><div className="mt-2"><Image src={selectedItem.imageUrl} alt="Certificate image" width={400} height={280} className="border-2 border-green-900/50" /></div></div> )}</div> ) : section === 'MENU' ? ( <div><h2 className="mb-4 text-3xl crt-text">// MAIN MENU</h2><div className="space-y-2">{menuItems.map((item, index) => ( <p key={item} className={`text-2xl ${listIndex === index ? 'bg-green-900/50 crt-text' : 'text-white/40'}`}>{listIndex === index ? '» ' : '  '}{item}</p>))}</div></div> ) : section === 'CONTACT' ? ( <div><h2 className="mb-4 text-3xl crt-text">// CONTACT SMT</h2><pre className="text-xl whitespace-pre-wrap font-mono crt-text">{contactDetails.trim()}</pre></div> ) : ( <div><h2 className="mb-4 text-3xl crt-text">{`// ${section}`}</h2><div className="space-y-1">{dataList.map((item, index) => ( <p key={isProject(item) ? item.title : item.name} className={`text-xl truncate ${index === listIndex ? 'bg-green-900/50 crt-text' : 'text-white/40'}`}>{index === listIndex ? '» ' : '  '}{isProject(item) ? item.title : item.name}</p>))}</div></div> )}</motion.div></AnimatePresence> );
+    };
+    const RemoteController = () => {
+      return ( <div className="remote-control"><button onClick={togglePower} className={`power-button ${isPoweredOn && 'on'}`}><svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6"><path d="M12 2c-5.52 0-10 4.48-10 10s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zM12 6c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1s1-.45 1-1V7c0-.55-.45-1-1-1z"/></svg></button><div className="d-pad"><button onClick={() => handleNavigation('UP')} className="d-pad-button d-pad-up"><svg viewBox="0 0 24 24"><path d="M12 8l-6 6h12z"/></svg></button><button onClick={() => {}} className="d-pad-button d-pad-right"><svg viewBox="0 0 24 24"><path d="M16 12l-6 6V6z"/></svg></button><button onClick={() => handleNavigation('DOWN')} className="d-pad-button d-pad-down"><svg viewBox="0 0 24 24"><path d="M12 16l6-6H6z"/></svg></button><button onClick={() => {}} className="d-pad-button d-pad-left"><svg viewBox="0 0 24 24"><path d="M8 12l6-6v12z"/></svg></button></div><div className="action-buttons"><button onClick={() => handleAction('BACK')} className="action-button">B</button><button onClick={() => handleAction('SELECT')} className="action-button">A</button></div></div> );
+    };
+
+    return (
+        <motion.main 
+            className="main-container" 
+            onWheel={handleWheel}
+        >
+            <AnimatePresence>
+                {isLoading && <LoadingScreen onComplete={handleLoadingComplete} />}
+            </AnimatePresence>
+            
+            {!isLoading && (
+                <motion.div
+                    className="portfolio-rig"
+                    initial={{ opacity: 0, scale: 1.2 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+                >
+                    <motion.div 
+                        className="pc-monitor-container"
+                        style={{ rotateX, rotateY }}
+                    >
+                        <div className="pc-monitor-3d-wrapper">
+                            <div className="pc-monitor-bezel">
+                                <div className="pc-monitor-screen crt-effect">
+                                    {isPoweredOn ? renderScreenContent() : <div className="w-full h-full bg-black" />}
+                                </div>
+                            </div>
+                            <div className="pc-monitor-back"></div>
+                        </div>
+                    </motion.div>
+                    
+                    <div className="desk">
+                        <div className="desk-reflection"></div>
+                    </div>
+
+                    <RemoteController />
+                </motion.div>
+            )}
+        </motion.main>
+    );
 }
