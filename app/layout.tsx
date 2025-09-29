@@ -1,18 +1,27 @@
-// app/layout.tsx
-import { Inter, Chakra_Petch } from 'next/font/google';
-import './globals.css';
+import type { Metadata } from 'next'
+import { VT323 } from 'next/font/google'
+import './globals.css'
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
-const chakraPetch = Chakra_Petch({
+const vt323 = VT323({
+  weight: '400',
   subsets: ['latin'],
-  weight: ['400', '700'],
-  variable: '--font-chakra-petch',
-});
+  display: 'swap',
+  variable: '--font-vt323',
+})
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export const metadata: Metadata = {
+  title: 'Steven MT - Software Engineer Portfolio',
+  description: 'A retro-futuristic portfolio with a CRT terminal interface.',
+}
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
-    <html lang="en" className={`${inter.variable} ${chakraPetch.variable}`}>
-      <body>{children}</body>
+    <html lang="en">
+      <body className={`${vt323.variable} font-vt323`}>{children}</body>
     </html>
-  );
+  )
 }

@@ -1,96 +1,61 @@
 'use client';
 import React, { useState, useEffect, ReactNode } from 'react';
 
-// --- Helper Functions & Static Data ---
+// --- Helper Function ---
 const getRandomInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
-
-const AsciiRadar = () => (
-    <pre className="text-center text-[10px] leading-tight">
-        {`
-    .        .      .      
-.   .  '  .     .      ..
-.   /\\     .  '      .  .
-   /  \\ . .      '   .   '
-  /----\\ '   .       .
- /      \\  . '   .   . .
-/________\\   .   '  .  .
-    || '   .  '   . . .
-    ||   '   .  '   . '
-`}
-    </pre>
-);
 
 // --- Main HUD Component ---
 const TerminalHUD = ({ children }: { children: ReactNode }) => {
-    const [time, setTime] = useState(new Date());
-    const [stats, setStats] = useState({ cpu: 67, mem: 45, net: 1.2 });
+    const [time, setTime] = useState(new Date());
+    const [stats, setStats] = useState({ cpu: 67, mem: 45, net: 1.2 });
 
-    // Effect for clock
-    useEffect(() => {
-        const timer = setInterval(() => setTime(new Date()), 1000);
-        return () => clearInterval(timer);
-    }, []);
-
-    // Effect for system stats fluctuation
-    useEffect(() => {
-        const statsTimer = setInterval(() => {
-            setStats({
-                cpu: getRandomInt(40, 95),
-                mem: getRandomInt(30, 80),
+    // Effect for clock and stats fluctuation
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setTime(new Date());
+            setStats({
+                cpu: getRandomInt(40, 95),
+                mem: getRandomInt(30, 80),
                 net: (Math.random() * 2 + 0.5),
-            });
-        }, 2000);
-        return () => clearInterval(statsTimer);
-    }, []);
+            });
+        }, 1500);
+        return () => clearInterval(timer);
+    }, []);
 
-    const formattedTime = time.toLocaleTimeString('en-GB');
-    const formattedDate = time.toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' });
+    const formattedTime = time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+    const formattedDate = time.toLocaleDateString('en-GB', { year: '2-digit', month: '2-digit', day: '2-digit' });
 
-    return (
-        <div className="hud-container">
+    return (
+        <div className="hud-container">
+            {/* Decorative Corners */}
+            <div className="hud-corner top-left"></div>
+            <div className="hud-corner top-right"></div>
+            <div className="hud-corner bottom-left"></div>
+            <div className="hud-corner bottom-right"></div>
+            
+            {/* Header */}
             <div className="hud-header">
-                <span>[ SMT-OS v5.2 | MAIN TERMINAL ]</span>
+                <span>SMT-OS [v5.4]</span>
+                <span className="rec-light">REC</span>
                 <span>{formattedDate}</span>
             </div>
-
-            <div className="hud-sidebar hud-sidebar-left">
-                <div className="hud-panel">
-                    <h3 className="hud-panel-title">SYSTEM STATUS</h3>
-                    <p>CPU LOAD .: [{stats.cpu}%]</p>
-                    <p>MEM USAGE : [{stats.mem}%]</p>
-                    <p>NET SPEED : [{stats.net.toFixed(2)} Gb/s]</p>
-                    <p>SESSION ..: [SECURE]</p>
-                </div>
-                <div className="hud-panel">
-                    <h3 className="hud-panel-title">GEOLINK</h3>
-                    <p>NODE ....: TANGERANG, ID</p>
-                    <p>SIGNAL ..: STRONG</p>
-                    <p>LATENCY .: [42ms]</p>
-                </div>
-            </div>
-
-            <main className="hud-main-content">
-                {children}
-            </main>
-
-            <div className="hud-sidebar hud-sidebar-right">
-                <div className="hud-panel">
-                    <h3 className="hud-panel-title">SCANNER</h3>
-                    <AsciiRadar />
-                </div>
-                <div className="hud-panel">
-                    <h3 className="hud-panel-title">INFO</h3>
-                    <p>USER: GUEST</p>
-                    <p>AUTH: LVL-1</p>
-                </div>
-            </div>
-
-            <div className="hud-footer">
-                <span>SYSTEM READY</span>
+            
+            {/* Main Content */}
+            <main className="hud-main-content">
+                {children}
+            </main>
+            
+            {/* Footer / Status Bar */}
+            <div className="hud-status-bar">
+                <span>CPU: {stats.cpu}%</span>
+                <span>MEM: {stats.mem}%</span>
+                <span>NET: {stats.net.toFixed(1)}Gb/s</span>
+                <span className="status-ok">STATUS: OK</span>
+                <span className="flex-grow"></span>
                 <span>{formattedTime}</span>
-            </div>
-        </div>
-    );
+            </div>
+        </div>
+    );
 };
 
 export default TerminalHUD;
