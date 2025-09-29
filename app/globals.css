@@ -157,13 +157,26 @@ body {
 
 /* === MOBILE OPTIMIZATION === */
 @media (max-width: 767px) {
-  .monitor-3d-wrapper { width: 95vw; aspect-ratio: 9/16; }
+  .monitor-3d-wrapper {
+    width: 85vw;
+    aspect-ratio: 4/5;
+    max-height: 80vh;
+  }
   .window-container, .item-preview-overlay { display: none; }
   .profile-icon { top: auto; bottom: 1rem; left: 1rem; }
   .guide-popup { top: auto; bottom: 5rem; left: 1rem; }
   .inventory-bag-icon { top: auto; bottom: 1rem; right: 1rem; left: auto; }
   .inventory-panel { top: auto; bottom: 5rem; right: 1rem; left: auto; }
-  .card-container, .controller { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 95%; bottom: auto; right: auto; max-width: 380px; }
+  .card-container, .controller {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 95%;
+    bottom: auto; 
+    right: auto;
+    max-width: 380px;
+  }
   .controller { max-width: 280px; }
   .cover-letter-container { position: fixed; inset: 0; padding: 1rem; z-index: 120; }
   .cover-letter-header, .cover-letter-content { max-width: 100%; }
