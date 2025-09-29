@@ -23,8 +23,7 @@ body {
 /* === MAIN LAYOUT & LOADING === */
 .main-container { display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; perspective: 1500px; position: relative; }
 .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--fallout-bg); display: flex; align-items: center; justify-content: center; z-index: 200; }
-.loading-crt-effect { width: 100%; height: 100%; animation: turn-on 0.6s ease-out; display: flex; align-items: center; justify-content: center; }
-.loading-text-container { text-align: center; color: var(--fallout-green); font-family: 'VT323', monospace; opacity: 0; animation: text-flicker 2s 0.5s forwards; }
+.loading-text-container { text-align: center; color: var(--fallout-green); font-family: 'VT323', monospace; }
 .loading-text-container h1 { font-size: 4rem; letter-spacing: 0.5rem; margin-bottom: 0.5rem; text-shadow: 0 0 15px var(--fallout-green); }
 .loading-text-container p { font-size: 1.5rem; letter-spacing: 0.2rem; opacity: 0.8; }
 .blinking-cursor { animation: blink 1s step-end infinite; }
@@ -164,10 +163,10 @@ body {
     max-height: 80vh;
   }
   .window-container, .item-preview-overlay { display: none; }
-  .profile-icon { top: 1rem; bottom: auto; left: 1rem; }
-  .guide-popup { top: 5rem; bottom: auto; left: 1rem; }
-  .inventory-bag-icon { top: 1rem; bottom: auto; right: 1rem; left: auto; }
-  .inventory-panel { top: 4.5rem; bottom: auto; right: 1rem; left: auto; flex-direction: column; }
+  .profile-icon { top: auto; bottom: 1rem; left: 1rem; }
+  .guide-popup { top: auto; bottom: 5rem; left: 1rem; }
+  .inventory-bag-icon { top: auto; bottom: 1rem; right: 1rem; left: auto; }
+  .inventory-panel { top: auto; bottom: 5rem; right: 1rem; left: auto; }
   .card-container, .controller {
     position: fixed;
     top: 50%;
@@ -179,30 +178,12 @@ body {
     max-width: 380px;
   }
   .controller { max-width: 280px; }
-  .controller .d-pad { width: 80px; height: 80px; }
-  .controller .d-pad button { width: 26px; height: 26px; }
-  .controller .d-pad > button:nth-child(1) { top: 2px; left: 27px; } 
-  .controller .d-pad > button:nth-child(2) { top: 27px; left: 2px; } 
-  .controller .d-pad > button:nth-child(3) { top: 27px; right: 2px; } 
-  .controller .d-pad > button:nth-child(4) { bottom: 2px; left: 27px; }
-  .cover-letter-container { padding: 1rem; }
+  .cover-letter-container { position: fixed; inset: 0; padding: 1rem; z-index: 120; }
   .cover-letter-header, .cover-letter-content { max-width: 100%; }
-  .game-container { padding: 0.5rem; }
-  .game-board { font-size: 0.7rem; line-height: 0.95; }
 }
 
 /* === KEYFRAME ANIMATIONS === */
 @keyframes blink { 50% { opacity: 0; } }
 @keyframes blink-eye { 0%, 90%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
-@keyframes kelap-kelip {
-    0%, 100% {
-        opacity: 0.7;
-        text-shadow: 0 0 10px var(--fallout-green);
-    }
-    50% {
-        opacity: 1;
-        text-shadow: 0 0 20px #fff, 0 0 15px var(--fallout-green);
-    }
-}
 @keyframes scanline-move { from { background-position-y: 0; } to { background-position-y: 100vh; } }
 @keyframes marquee { from { transform: translateX(110%); } to { transform: translateX(-110%); } }
