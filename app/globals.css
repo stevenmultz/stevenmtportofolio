@@ -160,7 +160,7 @@ body {
   .monitor-3d-wrapper {
     width: 85vw;
     aspect-ratio: 4/5;
-    max-height: 80vh;
+    max-height: 100vh;
   }
   .window-container, .item-preview-overlay { display: none; }
   .profile-icon { top: auto; bottom: 1rem; left: 1rem; }
