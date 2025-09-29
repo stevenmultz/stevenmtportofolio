@@ -6,8 +6,6 @@ import { motion, AnimatePresence, useMotionValue, animate, useDragControls } fro
 import { projects, certificates, contactDetails, Project, Certificate } from '@/app/data/portfolioData';
 import { useSound } from '@/app/hooks/useSound';
 import TerminalHUD from '@/app/components/TerminalHUD';
-import AsciiTetris from '@/app/components/AsciiTetris';
-import AsciiSnake from '@/app/components/AsciiSnake';
 
 // --- Helper: Parse Contact Details ---
 const emailMatch = contactDetails.match(/Email: (.*)/);
@@ -23,58 +21,22 @@ const isCertificate = (item: Project | Certificate | null): item is Certificate 
 // --- UTILITY TYPES ---
 interface Window { id: string; title: string; type: 'INFO' | 'IMAGE'; content: Project | Certificate | string; initialPos: { x: number; y: number }; }
 type ActiveItemType = 'controller' | 'namecard' | 'coverletter' | null;
-type SectionType = 'MENU' | 'PROJECTS' | 'CERTIFICATES' | 'TETRIS' | 'SNAKE';
 
 // === UI COMPONENTS ===
 
-const LoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
-    const [title, setTitle] = useState("██████ ██");
-    const [subtitle, setSubtitle] = useState("███████ ███ ███");
-    const finalTitle = "STEVEN MT";
-    const finalSubtitle = "LOOKING FOR JOB";
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_./\\|<>*#@!&%$";
-
+const TextLoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
     useEffect(() => {
-        let interval: NodeJS.Timeout;
-        const scramble = (targetText: string, setText: React.Dispatch<React.SetStateAction<string>>, onDone?: () => void) => {
-            let iteration = 0;
-            clearInterval(interval);
-            interval = setInterval(() => {
-                setText(
-                    targetText.split("").map((_char, index) => {
-                        if (index < iteration) return targetText[index];
-                        return chars[Math.floor(Math.random() * chars.length)];
-                    }).join("")
-                );
-                if (iteration >= targetText.length) {
-                    clearInterval(interval);
-                    onDone?.();
-                }
-                iteration += 1 / 3;
-            }, 50);
-        };
-
-        const subtitleTimer = setTimeout(() => {
-            scramble(finalSubtitle, setSubtitle);
-        }, 1200);
-
-        scramble(finalTitle, setTitle, () => {
-             setTimeout(onComplete, 1000);
-        });
-
-        return () => {
-            clearInterval(interval);
-            clearTimeout(subtitleTimer);
-        };
+        const timer = setTimeout(onComplete, 2800);
+        return () => clearTimeout(timer);
     }, [onComplete]);
 
     return (
         <motion.div className="loading-overlay" exit={{ opacity: 0 }}>
-            <div className="loading-crt-effect">
-                <div className="loading-text-container">
-                    <h1>{title}</h1>
-                    <p>{subtitle}</p>
-                </div>
+            <div className="loading-text-container">
+                <motion.h1 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1 }}>STEVEN MT</motion.h1>
+                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1, delay: 0.5 }}>
+                    LOOKING FOR JOB<span className="blinking-cursor">_</span>
+                </motion.p>
             </div>
         </motion.div>
     );
@@ -172,9 +134,12 @@ const CoverLetterView = ({ onClose }: { onClose?: () => void }) => (
         </div>
         <div className="cover-letter-content">
             <p><strong>TO:</strong> Hiring Manager</p>
-            <p><strong>SUBJECT:</strong> Software Engineer Application</p>
+            <p><strong>FROM:</strong> Steven M. T.</p>
+            <p><strong>SUBJECT:</strong> Application for Software Engineer Role</p>
             <br/>
-            <p>Passionate developer with expertise in React & Next.js. My portfolio showcases my ability to build clean, efficient applications. Ready to contribute to your team.</p>
+            <p>Greetings,</p>
+            <p>My portfolio demonstrates a strong capability in modern web development with React, Next.js, and TypeScript. I am a dedicated problem-solver, passionate about building clean, efficient applications.</p>
+            <p>I am confident my skills align with your team's needs and am eager to contribute. Ready to discuss how I can bring value to your projects.</p>
             <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="contact-button">
                 Contact Me
             </a>
@@ -263,7 +228,7 @@ const MobileDetailView = ({ item, onClose }: { item: Project | Certificate, onCl
                 )}
             </div>
         </motion.div>
-    )
+    );
 };
 
 const CssCrtMonitor = ({ children, style }: { children: ReactNode, style: object }) => (
@@ -342,7 +307,7 @@ export default function HomePage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isPoweredOn, setIsPoweredOn] = useState(false);
     const [isBooting, setIsBooting] = useState(false);
-    const [section, setSection] = useState<SectionType>('MENU');
+    const [section, setSection] = useState<'MENU' | 'PROJECTS' | 'CERTIFICATES'>('MENU');
     const [listIndex, setListIndex] = useState(0);
     const [isMobile, setIsMobile] = useState(false);
     const [windows, setWindows] = useState<Window[]>([]);
@@ -359,7 +324,7 @@ export default function HomePage() {
     const playBack = useSound('/map.mp3', 0.6); const playPowerOn = useSound('/map.mp3', 1);
     const playPowerOff = useSound('/map.mp3', 1);
     
-    const menuItems = useMemo(() => ['PROJECTS', 'CERTIFICATES', 'TETRIS', 'SNAKE'], []);
+    const menuItems = useMemo(() => ['PROJECTS', 'CERTIFICATES'], []);
     const dataList = useMemo(() => {
         if (section === 'PROJECTS') return projects;
         if (section === 'CERTIFICATES') return certificates;
@@ -437,8 +402,8 @@ export default function HomePage() {
         if (action === 'SELECT') {
             playSelect();
             if (section === 'MENU') {
-                setSection(menuItems[listIndex] as SectionType);
-            } else if (section === 'PROJECTS' || section === 'CERTIFICATES') {
+                setSection(menuItems[listIndex] as 'PROJECTS' | 'CERTIFICATES');
+            } else {
                 const item = dataList[listIndex];
                 if (!item) return;
                 if (isMobile) {
@@ -456,9 +421,13 @@ export default function HomePage() {
             }
         } else if (action === 'BACK') {
             playBack();
-            if (isMobile && mobileDetailItem) { setMobileDetailItem(null); } 
-            else if (windows.length > 0) { setWindows([]); } 
-            else if (section !== 'MENU') { setSection('MENU'); }
+            if (isMobile && mobileDetailItem) {
+                setMobileDetailItem(null);
+            } else if (windows.length > 0) {
+                setWindows([]);
+            } else if (section !== 'MENU') {
+                setSection('MENU');
+            }
         }
     }, [isPoweredOn, isBooting, playSelect, playBack, section, menuItems, listIndex, dataList, windows, isMobile, mobileDetailItem]);
     
@@ -467,10 +436,6 @@ export default function HomePage() {
     
     const renderScreenContent = () => {
         if (isBooting) { return ( <div className="boot-screen">BOOTING SMT-OS...</div> ); }
-        
-        if (section === 'TETRIS') return <AsciiTetris />;
-        if (section === 'SNAKE') return <AsciiSnake />;
-
         const list = section === 'MENU' ? menuItems : dataList;
         return ( 
             <div className="screen-content" ref={screenContentRef}>
@@ -487,13 +452,16 @@ export default function HomePage() {
     
     return (
         <main className="main-container" ref={mainContainerRef} onMouseMove={handleMouseMove}>
-            <AnimatePresence>{isLoading && <LoadingScreen onComplete={() => setIsLoading(false)} />}</AnimatePresence>
+            <AnimatePresence>{isLoading && <TextLoadingScreen onComplete={() => setIsLoading(false)} />}</AnimatePresence>
             <AnimatePresence>{!isMobile && windows.map(w => <DraggableWindow key={w.id} windowData={w} onClose={closeWindow} />)}</AnimatePresence>
 
             {!isLoading && (
                 <>
                     <ProfileIcon onClick={() => setIsGuideVisible(p => !p)} />
-                    <AnimatePresence>{isGuideVisible && <GuidePopup onClose={() => setIsGuideVisible(false)} />}</AnimatePresence>
+                    <AnimatePresence>
+                        {isGuideVisible && <GuidePopup onClose={() => setIsGuideVisible(false)} />}
+                    </AnimatePresence>
+
                     <InventoryBagIcon onToggle={() => setIsInventoryOpen(prev => !prev)} isOpen={isInventoryOpen} />
                     <AnimatePresence>
                         {isInventoryOpen && (
@@ -509,7 +477,11 @@ export default function HomePage() {
                         {isPoweredOn ? <TerminalHUD>{renderScreenContent()}</TerminalHUD> : <div className="screen-off-overlay" />}
                     </CssCrtMonitor>
                     
-                    {!isMobile && ( <AnimatePresence>{previewItem && <ItemPreview item={previewItem} onAnimationComplete={handlePreviewAnimationComplete} />}</AnimatePresence> )}
+                    {!isMobile && (
+                        <AnimatePresence>
+                            {previewItem && <ItemPreview item={previewItem} onAnimationComplete={handlePreviewAnimationComplete} />}
+                        </AnimatePresence>
+                    )}
 
                     <AnimatePresence>
                         {activeItem === 'controller' && <ControlPad dragConstraints={mainContainerRef} isPoweredOn={isPoweredOn} togglePower={togglePower} handleNavigation={handleNavigation} handleAction={handleAction} />}
@@ -517,7 +489,9 @@ export default function HomePage() {
                         {activeItem === 'coverletter' && <CoverLetterView onClose={() => setActiveItem(null)} />}
                     </AnimatePresence>
                     
-                    <AnimatePresence>{isMobile && mobileDetailItem && <MobileDetailView item={mobileDetailItem} onClose={() => setMobileDetailItem(null)} />}</AnimatePresence>
+                    <AnimatePresence>
+                        {isMobile && mobileDetailItem && <MobileDetailView item={mobileDetailItem} onClose={() => setMobileDetailItem(null)} />}
+                    </AnimatePresence>
                 </>
             )}
         </main>

@@ -23,10 +23,9 @@ body {
 /* === MAIN LAYOUT & LOADING === */
 .main-container { display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; perspective: 1500px; position: relative; }
 .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--fallout-bg); display: flex; align-items: center; justify-content: center; z-index: 200; }
-.loading-crt-effect { width: 100%; height: 100%; animation: turn-on 0.6s ease-out; display: flex; align-items: center; justify-content: center; }
-.loading-text-container { text-align: center; color: var(--fallout-green); font-family: 'VT323', monospace; opacity: 0; animation: text-flicker 2s 0.5s forwards; }
-.loading-text-container h1 { font-size: 4rem; letter-spacing: 0.5rem; margin-bottom: 0.5rem; text-shadow: 0 0 15px var(--fallout-green); }
-.loading-text-container p { font-size: 1.5rem; letter-spacing: 0.2rem; opacity: 0.8; }
+.simple-loading-text { color: var(--fallout-green); text-align: center; animation: kelap-kelip 2s infinite; }
+.simple-loading-text p { font-family: 'VT323', monospace; font-size: 4rem; letter-spacing: 0.5rem; text-shadow: 0 0 15px var(--fallout-green); }
+.simple-loading-text span { font-family: 'Share Tech Mono', monospace; font-size: 1.5rem; letter-spacing: 0.8rem; opacity: 0.8; }
 .blinking-cursor { animation: blink 1s step-end infinite; }
 
 /* === DECORATIVE & INVENTORY === */
@@ -187,22 +186,21 @@ body {
   .controller .d-pad > button:nth-child(4) { bottom: 2px; left: 27px; }
   .cover-letter-container { padding: 1rem; }
   .cover-letter-header, .cover-letter-content { max-width: 100%; }
+  .game-board { font-size: 0.8rem; line-height: 0.95; }
 }
 
 /* === KEYFRAME ANIMATIONS === */
 @keyframes blink { 50% { opacity: 0; } }
 @keyframes blink-eye { 0%, 90%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
-@keyframes turn-on {
-    0% { transform: scaleY(0.01) scaleX(0.2); }
-    50% { transform: scaleY(0.01) scaleX(1); }
-    100% { transform: scaleY(1) scaleX(1); }
-}
-@keyframes text-flicker {
-    0% { opacity: 0; }
-    50% { opacity: 0.5; }
-    60% { opacity: 0.2; }
-    80% { opacity: 0.8; }
-    100% { opacity: 1; }
+@keyframes kelap-kelip {
+    0%, 100% {
+        opacity: 0.7;
+        text-shadow: 0 0 10px var(--fallout-green);
+    }
+    50% {
+        opacity: 1;
+        text-shadow: 0 0 20px #fff, 0 0 15px var(--fallout-green);
+    }
 }
 @keyframes scanline-move { from { background-position-y: 0; } to { background-position-y: 100vh; } }
 @keyframes marquee { from { transform: translateX(110%); } to { transform: translateX(-110%); } }
