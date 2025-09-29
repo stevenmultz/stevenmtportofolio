@@ -26,18 +26,20 @@ type ActiveItemType = 'controller' | 'namecard' | 'coverletter' | null;
 
 const TextLoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
     useEffect(() => {
-        const timer = setTimeout(onComplete, 2800);
+        const timer = setTimeout(onComplete, 2500);
         return () => clearTimeout(timer);
     }, [onComplete]);
 
     return (
         <motion.div className="loading-overlay" exit={{ opacity: 0 }}>
-            <div className="loading-text-container">
-                <motion.h1 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1 }}>STEVEN MT</motion.h1>
-                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1, delay: 0.5 }}>
-                    LOOKING FOR JOB<span className="blinking-cursor">_</span>
-                </motion.p>
-            </div>
+            <motion.h1 
+                className="loading-title-main"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 1.5 }}
+            >
+                STEVEN MT<span className="blinking-cursor">_</span>
+            </motion.h1>
         </motion.div>
     );
 };
@@ -72,7 +74,7 @@ const DraggableWindow = ({ windowData, onClose }: { windowData: Window, onClose:
 const IdCard = ({ onClose, dragConstraints }: { onClose?: () => void, dragConstraints?: React.RefObject<HTMLElement | null> }) => {
     const [isFlipped, setIsFlipped] = useState(false);
     return (
-        <motion.div 
+        <motion.div
             className="card-container"
             drag dragConstraints={dragConstraints} dragMomentum={false}
             initial={{ y: 200, opacity: 0 }}
@@ -81,13 +83,14 @@ const IdCard = ({ onClose, dragConstraints }: { onClose?: () => void, dragConstr
             transition={{ type: 'spring', stiffness: 200, damping: 25 }}
         >
             <div className="card-flipper" onClick={() => setIsFlipped(p => !p)}>
-                <motion.div 
+                {/* Card Front */}
+                <motion.div
                     className="card-front"
                     animate={{ rotateY: isFlipped ? 180 : 0 }}
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                 >
                     <div className="card-header">
-                        <h3>IDENTIFICATION_</h3>
+                        <span className="card-logo">SMT_id</span>
                         {onClose && <button onClick={(e) => { e.stopPropagation(); onClose(); }} className="card-close-button">[X]</button>}
                     </div>
                     <div className="card-content-front">
@@ -97,24 +100,36 @@ const IdCard = ({ onClose, dragConstraints }: { onClose?: () => void, dragConstr
                         <div className="card-info-front">
                             <h2>Steven M. T.</h2>
                             <p>Software Engineer</p>
+                            <div className="card-barcode" />
                         </div>
                     </div>
-                    <div className="card-footer">
-                        <span>[ Click to Flip ]</span>
-                    </div>
                 </motion.div>
-                <motion.div 
+                {/* Card Back */}
+                <motion.div
                     className="card-back"
                     initial={{ rotateY: -180 }}
                     animate={{ rotateY: isFlipped ? 0 : -180 }}
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                 >
-                     <div className="card-header"><h3>CONTACT_INFO_</h3></div>
-                     <div className="card-content-back">
-                        <p><span>EMAIL</span><a onClick={e => e.stopPropagation()} href={`mailto:${email}`}>{email}</a></p>
-                        <p><span>WAPP</span><a onClick={e => e.stopPropagation()} href={whatsappLink} target="_blank" rel="noopener noreferrer">+{whatsappNumber}</a></p>
-                        <p><span>LOCATION</span>Tangerang, ID</p>
-                     </div>
+                    <div className="card-back-header">
+                        <div className="card-mag-strip" />
+                    </div>
+                    <div className="card-content-back">
+                        <p>This card grants access to Level-1 contact information. For further inquiries, please use the provided channels.</p>
+                        <div className="card-contact-grid">
+                            <a onClick={e => e.stopPropagation()} href={`mailto:${email}`}>
+                                <span>EMAIL</span>
+                                <div>{email}</div>
+                            </a>
+                            <a onClick={e => e.stopPropagation()} href={whatsappLink} target="_blank" rel="noopener noreferrer">
+                                <span>WHATSAPP</span>
+                                <div>+{whatsappNumber}</div>
+                            </a>
+                        </div>
+                        <div className="card-location">
+                           <span>LOCATION:</span> TANGERANG, INDONESIA
+                        </div>
+                    </div>
                 </motion.div>
             </div>
         </motion.div>
@@ -122,39 +137,41 @@ const IdCard = ({ onClose, dragConstraints }: { onClose?: () => void, dragConstr
 };
 
 const CoverLetterView = ({ onClose }: { onClose?: () => void }) => (
-    <motion.div 
+    <motion.div
         className="cover-letter-container"
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
     >
         <div className="cover-letter-header">
-            <h3>NOTE.txt</h3>
+            <h3>MESSAGE.txt</h3>
             {onClose && <button onClick={onClose} className="cover-letter-close-button">[X]</button>}
         </div>
         <div className="cover-letter-content">
-            <p><strong>TO:</strong> Hiring Manager</p>
-            <p><strong>FROM:</strong> Steven M. T.</p>
-            <p><strong>SUBJECT:</strong> Application for Software Engineer Role</p>
-            <br/>
-            <p>Greetings,</p>
-            <p>My portfolio demonstrates a strong capability in modern web development with React, Next.js, and TypeScript. I am a dedicated problem-solver, passionate about building clean, efficient applications.</p>
-            <p>I am confident my skills align with your team's needs and am eager to contribute. Ready to discuss how I can bring value to your projects.</p>
+            <p>
+                Hello,
+            </p>
+            <p>
+                I am a passionate software engineer specializing in modern web technologies. My portfolio showcases my dedication to building clean, efficient, and user-friendly applications.
+            </p>
+            <p>
+                I'm currently seeking new opportunities and would be thrilled to discuss how my skills can bring value to your team.
+            </p>
             <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="contact-button">
-                Contact Me
+                Let's Talk
             </a>
         </div>
     </motion.div>
 );
 
 const InventoryBagIcon = ({ onToggle, isOpen }: { onToggle: () => void, isOpen: boolean }) => (
-    <button className={`inventory-bag-icon ${isOpen ? 'active' : ''}`} onClick={onToggle}>
-        [INVENTORY]
+    <button className="inventory-bag-icon" onClick={onToggle}>
+        INVENTORY
     </button>
 );
 
 const InventoryPanel = ({ activeItem, onSelect }: { activeItem: ActiveItemType, onSelect: (item: 'controller' | 'namecard' | 'coverletter') => void }) => (
-    <motion.div 
+    <motion.div
         className="inventory-panel"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -188,43 +205,39 @@ const MobileDetailView = ({ item, onClose }: { item: Project | Certificate, onCl
     return (
         <motion.div className="mobile-detail-view" initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ ease: 'circOut' }}>
             <div className="mobile-detail-header">
-                <h3>// FILE: {isProject(item) ? item.title.toUpperCase() : item.name.toUpperCase()}</h3>
-                <button onClick={onClose} className="mobile-close-button">[ B: CLOSE ]</button>
+                <button onClick={onClose} className="mobile-close-button">← BACK</button>
             </div>
             <div className="mobile-detail-content">
+                <h2 className="mobile-detail-title">{isProject(item) ? item.title : item.name}</h2>
+                <div className="mobile-detail-meta">
+                    <span>{item.year}</span>
+                    <span className="meta-divider">|</span>
+                    <span>{isProject(item) ? item.type : item.institution}</span>
+                    {isProject(item) && <><span className="meta-divider">|</span><span>{item.status}</span></>}
+                </div>
+
                 {isProject(item) ? (
                     <>
-                        <div className="detail-card">
-                            <h4>PROPERTIES</h4>
-                            <p><span>TYPE:</span> {item.type}</p>
-                            <p><span>YEAR:</span> {item.year}</p>
-                            <p><span>STATUS:</span> {item.status}</p>
+                        <div className="mobile-detail-section">
+                            <h3 className="mobile-detail-section-title">DESCRIPTION</h3>
+                            <p>{item.description}</p>
                         </div>
-                        <div className="detail-card">
-                            <h4>DESCRIPTION</h4>
-                            <p className="description">{item.description}</p>
+                        <div className="mobile-detail-section">
+                            <h3 className="mobile-detail-section-title">TECH STACK</h3>
+                            <div className="mobile-skills-container">
+                                {item.skills.map(skill => <span key={skill} className="skill-tag">{skill}</span>)}
+                            </div>
                         </div>
-                        <div className="detail-card">
-                            <h4>TECH STACK</h4>
-                            <p className="skills">{item.skills.join(', ')}</p>
-                        </div>
-                        <div className="detail-card">
-                            <h4>VISUAL DATA</h4>
+                        <div className="mobile-detail-section">
+                            <h3 className="mobile-detail-section-title">GALLERY</h3>
                             {item.images.map(img => <Image key={img} src={img} width={500} height={300} alt="Project image" className="mobile-image" />)}
                         </div>
                     </>
                 ) : (
-                    <>
-                        <div className="detail-card">
-                            <h4>PROPERTIES</h4>
-                            <p><span>FROM:</span> {item.institution}</p>
-                            <p><span>YEAR:</span> {item.year}</p>
-                        </div>
-                        <div className="detail-card">
-                            <h4>PROOF OF COMPLETION</h4>
-                            <Image src={item.imageUrl} width={500} height={350} alt="Certificate image" className="mobile-image" />
-                        </div>
-                    </>
+                    <div className="mobile-detail-section">
+                        <h3 className="mobile-detail-section-title">PROOF OF COMPLETION</h3>
+                        <Image src={item.imageUrl} width={500} height={350} alt="Certificate image" className="mobile-image" />
+                    </div>
                 )}
             </div>
         </motion.div>
@@ -245,15 +258,15 @@ const CssCrtMonitor = ({ children, style }: { children: ReactNode, style: object
 const ControlPad = ({ isPreview = false, dragConstraints, isPoweredOn, togglePower, handleNavigation, handleAction }: {
     isPreview?: boolean; dragConstraints?: React.RefObject<HTMLElement | null>; isPoweredOn?: boolean; togglePower?: () => void; handleNavigation?: (direction: 'UP' | 'DOWN' | 'LEFT' | 'RIGHT') => void; handleAction?: (action: 'SELECT' | 'BACK') => void;
 }) => (
-    <motion.div className="controller" 
-        drag={!isPreview} dragConstraints={dragConstraints} dragMomentum={false} 
+    <motion.div className="controller"
+        drag={!isPreview} dragConstraints={dragConstraints} dragMomentum={false}
         initial={{ y: 200, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 200, opacity: 0 }}
         transition={{ type: 'spring', stiffness: 200, damping: 20 }}>
         <div className="controller-top-section"><div className="speaker-grille"></div><div className="controller-screen-deco"><div className="controller-screen-scanline"></div><span className="controller-screen-text">STEVEN MULYA TJENDRATAMA 2025</span></div></div>
         <div className="controller-mid-section">
-             <div className="d-pad"><button onClick={() => handleNavigation?.('UP')}>▲</button><button onClick={() => handleNavigation?.('LEFT')}>◀</button><button onClick={() => handleNavigation?.('RIGHT')}>▶</button><button onClick={() => handleNavigation?.('DOWN')}>▼</button></div>
+            <div className="d-pad"><button onClick={() => handleNavigation?.('UP')}>▲</button><button onClick={() => handleNavigation?.('LEFT')}>◀</button><button onClick={() => handleNavigation?.('RIGHT')}>▶</button><button onClick={() => handleNavigation?.('DOWN')}>▼</button></div>
             <button onClick={togglePower} className={`power-button ${isPoweredOn && 'on'}`} aria-label="Power"><div></div></button>
-             <div className="action-buttons"><button onClick={() => handleAction?.('SELECT')} className="action-a">A</button><button onClick={() => handleAction?.('BACK')} className="action-b">B</button></div>
+            <div className="action-buttons"><button onClick={() => handleAction?.('SELECT')} className="action-a">A</button><button onClick={() => handleAction?.('BACK')} className="action-b">B</button></div>
         </div>
         <div className="controller-bottom-section"><div className="knob"><div className="knob-marker"></div></div><div className="knob"><div className="knob-marker"></div></div></div>
     </motion.div>
@@ -273,7 +286,7 @@ const ProfileIcon = ({ onClick }: { onClick: () => void }) => {
 
 const GuidePopup = ({ onClose }: { onClose: () => void }) => {
     const [text, setText] = useState("");
-    const fullText = "Hello! I'm Steven. Use the [INVENTORY] button to get the Control Pad, then press the Power button (⏻) to start exploring.";
+    const fullText = "Hello! I'm Steven. Use the INVENTORY text to get the Control Pad, then press the Power button (⏻) to start exploring.";
 
     useEffect(() => {
         setText("");
@@ -290,7 +303,7 @@ const GuidePopup = ({ onClose }: { onClose: () => void }) => {
     }, []);
 
     return (
-        <motion.div 
+        <motion.div
             className="guide-popup"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -323,7 +336,7 @@ export default function HomePage() {
     const playNav = useSound('/map.mp3', 0.5); const playSelect = useSound('/map.mp3', 0.8);
     const playBack = useSound('/map.mp3', 0.6); const playPowerOn = useSound('/map.mp3', 1);
     const playPowerOff = useSound('/map.mp3', 1);
-    
+
     const menuItems = useMemo(() => ['PROJECTS', 'CERTIFICATES'], []);
     const dataList = useMemo(() => {
         if (section === 'PROJECTS') return projects;
@@ -331,10 +344,10 @@ export default function HomePage() {
         return [];
     }, [section]);
 
-    useEffect(() => { 
-        const checkMobile = () => setIsMobile(window.innerWidth < 768); 
-        checkMobile(); window.addEventListener('resize', checkMobile); 
-        return () => window.removeEventListener('resize', checkMobile); 
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 768);
+        checkMobile(); window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
     useEffect(() => {
@@ -366,7 +379,7 @@ export default function HomePage() {
     };
 
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        if(isMobile || isLoading) return;
+        if (isMobile || isLoading) return;
         const { clientX, clientY } = e;
         const { offsetWidth, offsetHeight } = mainContainerRef.current!;
         const y = (clientX - offsetWidth / 2) / offsetWidth * 25;
@@ -379,14 +392,14 @@ export default function HomePage() {
 
     const togglePower = useCallback(() => {
         if (isLoading) return;
-        setIsPoweredOn(prev => { 
-            const newState = !prev; 
-            if (newState) { playPowerOn(); setIsBooting(true); } 
-            else { playPowerOff(); setSection('MENU'); setWindows([]); } 
-            return newState; 
+        setIsPoweredOn(prev => {
+            const newState = !prev;
+            if (newState) { playPowerOn(); setIsBooting(true); }
+            else { playPowerOff(); setSection('MENU'); setWindows([]); }
+            return newState;
         });
     }, [isLoading, playPowerOn, playPowerOff]);
-    
+
     const handleNavigation = useCallback((direction: 'UP' | 'DOWN' | 'LEFT' | 'RIGHT') => {
         if (!isPoweredOn || isBooting) return; playNav();
         const list = section === 'MENU' ? menuItems : dataList;
@@ -396,7 +409,7 @@ export default function HomePage() {
             return prev;
         });
     }, [isPoweredOn, isBooting, playNav, section, menuItems, dataList]);
-    
+
     const handleAction = useCallback((action: 'SELECT' | 'BACK') => {
         if (!isPoweredOn || isBooting) return;
         if (action === 'SELECT') {
@@ -412,7 +425,7 @@ export default function HomePage() {
                     const newWindows: Window[] = [];
                     newWindows.push({ id: isProject(item) ? item.title : item.name, title: 'INFO.TXT', type: 'INFO', content: item, initialPos: { x: window.innerWidth * 0.05, y: window.innerHeight * 0.1 } });
                     if (isProject(item) && item.images) {
-                        item.images.forEach((img, i) => newWindows.push({ id: `${item.title}-img-${i}`, title: `IMG_0${i+1}.JPG`, type: 'IMAGE', content: img, initialPos: { x: window.innerWidth * (0.55 + i*0.05), y: window.innerHeight * (0.12 + i*0.05) } }));
+                        item.images.forEach((img, i) => newWindows.push({ id: `${item.title}-img-${i}`, title: `IMG_0${i + 1}.JPG`, type: 'IMAGE', content: img, initialPos: { x: window.innerWidth * (0.55 + i * 0.05), y: window.innerHeight * (0.12 + i * 0.05) } }));
                     } else if (isCertificate(item)) {
                         newWindows.push({ id: `${item.name}-img`, title: 'PROOF.JPG', type: 'IMAGE', content: item.imageUrl, initialPos: { x: window.innerWidth * 0.55, y: window.innerHeight * 0.12 } });
                     }
@@ -430,26 +443,26 @@ export default function HomePage() {
             }
         }
     }, [isPoweredOn, isBooting, playSelect, playBack, section, menuItems, listIndex, dataList, windows, isMobile, mobileDetailItem]);
-    
+
     useEffect(() => { if (isBooting) { const timer = setTimeout(() => setIsBooting(false), 1200); return () => clearTimeout(timer); } }, [isBooting]);
     useEffect(() => { setListIndex(0); }, [section]);
-    
+
     const renderScreenContent = () => {
-        if (isBooting) { return ( <div className="boot-screen">BOOTING SMT-OS...</div> ); }
+        if (isBooting) { return (<div className="boot-screen">BOOTING SMT-OS...</div>); }
         const list = section === 'MENU' ? menuItems : dataList;
-        return ( 
+        return (
             <div className="screen-content" ref={screenContentRef}>
                 <h2 className="mb-4">// DIR: {section}</h2>
-                <div> 
+                <div>
                     {list.map((item, index) => {
                         const itemName = typeof item === 'string' ? item : (isProject(item) ? item.title : item.name);
-                        return ( <p key={itemName} id={`item-${index}`} className={`truncate ${index === listIndex ? 'selected-item' : ''}`}>{listIndex === index ? '> ' : '  '}{itemName}</p> );
-                    })} 
+                        return (<p key={itemName} id={`item-${index}`} className={`truncate ${index === listIndex ? 'selected-item' : ''}`}>{listIndex === index ? '> ' : '  '}{itemName}</p>);
+                    })}
                 </div>
-            </div> 
+            </div>
         );
     };
-    
+
     return (
         <main className="main-container" ref={mainContainerRef} onMouseMove={handleMouseMove}>
             <AnimatePresence>{isLoading && <TextLoadingScreen onComplete={() => setIsLoading(false)} />}</AnimatePresence>
@@ -457,12 +470,15 @@ export default function HomePage() {
 
             {!isLoading && (
                 <>
-                    <ProfileIcon onClick={() => setIsGuideVisible(p => !p)} />
+                    <div className="top-left-controls">
+                        <ProfileIcon onClick={() => setIsGuideVisible(p => !p)} />
+                        <InventoryBagIcon onToggle={() => setIsInventoryOpen(prev => !prev)} isOpen={isInventoryOpen} />
+                    </div>
+                    
                     <AnimatePresence>
                         {isGuideVisible && <GuidePopup onClose={() => setIsGuideVisible(false)} />}
                     </AnimatePresence>
 
-                    <InventoryBagIcon onToggle={() => setIsInventoryOpen(prev => !prev)} isOpen={isInventoryOpen} />
                     <AnimatePresence>
                         {isInventoryOpen && (
                             <>
@@ -472,11 +488,11 @@ export default function HomePage() {
                             </>
                         )}
                     </AnimatePresence>
-                    
+
                     <CssCrtMonitor style={{ rotateX, rotateY }}>
                         {isPoweredOn ? <TerminalHUD>{renderScreenContent()}</TerminalHUD> : <div className="screen-off-overlay" />}
                     </CssCrtMonitor>
-                    
+
                     {!isMobile && (
                         <AnimatePresence>
                             {previewItem && <ItemPreview item={previewItem} onAnimationComplete={handlePreviewAnimationComplete} />}
@@ -488,7 +504,7 @@ export default function HomePage() {
                         {activeItem === 'namecard' && <IdCard onClose={() => setActiveItem(null)} dragConstraints={mainContainerRef} />}
                         {activeItem === 'coverletter' && <CoverLetterView onClose={() => setActiveItem(null)} />}
                     </AnimatePresence>
-                    
+
                     <AnimatePresence>
                         {isMobile && mobileDetailItem && <MobileDetailView item={mobileDetailItem} onClose={() => setMobileDetailItem(null)} />}
                     </AnimatePresence>
