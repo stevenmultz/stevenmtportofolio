@@ -166,7 +166,7 @@ const CoverLetterView = ({ onClose }: { onClose?: () => void }) => (
 
 const InventoryBagIcon = ({ onToggle, isOpen }: { onToggle: () => void, isOpen: boolean }) => (
     <button className="inventory-bag-icon" onClick={onToggle}>
-        INVENTORY
+        [INVENTORY]
     </button>
 );
 
