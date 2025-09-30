@@ -472,6 +472,9 @@ export default function HomePage() {
                 <>
                     <div className="top-left-controls">
                         <ProfileIcon onClick={() => setIsGuideVisible(p => !p)} />
+                    </div>
+                    {/* === PERUBAHAN DI SINI === */}
+                    <div className="top-right-controls">
                         <InventoryBagIcon onToggle={() => setIsInventoryOpen(prev => !prev)} isOpen={isInventoryOpen} />
                     </div>
                     
