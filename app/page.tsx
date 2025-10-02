@@ -2,47 +2,22 @@
 
 import React, { useState, useEffect, useMemo, useRef, useCallback, ReactNode } from 'react';
 import Image from 'next/image';
-import { motion, AnimatePresence, useMotionValue, animate, useDragControls } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue, animate, useDragControls, Variants } from 'framer-motion';
 import { projects, certificates, contactDetails, Project, Certificate } from '@/app/data/portfolioData';
 import { useSound } from '@/app/hooks/useSound';
 import TerminalHUD from '@/app/components/TerminalHUD';
 
-// --- Helper: Parse Contact Details ---
 const emailMatch = contactDetails.match(/Email: (.*)/);
 const whatsappMatch = contactDetails.match(/Whatsapp: \+([0-9]+)/);
 const email = emailMatch ? emailMatch[1].trim() : '';
 const whatsappNumber = whatsappMatch ? whatsappMatch[1].trim() : '';
 const whatsappLink = whatsappNumber ? `https://wa.me/${whatsappNumber}` : '';
 
-// --- TYPE GUARDS ---
 const isProject = (item: Project | Certificate | null): item is Project => !!item && 'skills' in item;
 const isCertificate = (item: Project | Certificate | null): item is Certificate => !!item && 'imageUrl' in item;
 
-// --- UTILITY TYPES ---
 interface Window { id: string; title: string; type: 'INFO' | 'IMAGE'; content: Project | Certificate | string; initialPos: { x: number; y: number }; }
 type ActiveItemType = 'controller' | 'namecard' | 'coverletter' | null;
-
-// === UI COMPONENTS ===
-
-const TextLoadingScreen = ({ onComplete }: { onComplete: () => void }) => {
-    useEffect(() => {
-        const timer = setTimeout(onComplete, 2500);
-        return () => clearTimeout(timer);
-    }, [onComplete]);
-
-    return (
-        <motion.div className="loading-overlay" exit={{ opacity: 0 }}>
-            <motion.h1 
-                className="loading-title-main"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 1.5 }}
-            >
-                STEVEN MT<span className="blinking-cursor">_</span>
-            </motion.h1>
-        </motion.div>
-    );
-};
 
 const DraggableWindow = ({ windowData, onClose }: { windowData: Window, onClose: (id: string) => void }) => {
     const dragControls = useDragControls();
@@ -83,28 +58,44 @@ const IdCard = ({ onClose, dragConstraints }: { onClose?: () => void, dragConstr
             transition={{ type: 'spring', stiffness: 200, damping: 25 }}
         >
             <div className="card-flipper" onClick={() => setIsFlipped(p => !p)}>
-                {/* Card Front */}
                 <motion.div
                     className="card-front"
                     animate={{ rotateY: isFlipped ? 180 : 0 }}
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                 >
+                    <div className="card-hologram"></div>
                     <div className="card-header">
-                        <span className="card-logo">SMT_id</span>
+                        <span className="card-issuer">MULATAMA CORP.</span>
                         {onClose && <button onClick={(e) => { e.stopPropagation(); onClose(); }} className="card-close-button">[X]</button>}
                     </div>
-                    <div className="card-content-front">
-                        <div className="card-photo">
-                            <Image src="/user.png" alt="User Photo" width={100} height={100} />
+                    <div className="card-body">
+                        <div className="card-photo-col">
+                            <div className="card-photo">
+                                <Image src="/user.png" alt="User Photo" width={100} height={100} />
+                            </div>
                         </div>
-                        <div className="card-info-front">
-                            <h2>Steven M. T.</h2>
-                            <p>Software Engineer</p>
-                            <div className="card-barcode" />
+                        <div className="card-info-col">
+                            <div className="card-field">
+                                <span className="field-label">Name</span>
+                                <span className="field-value">Steven M. Tjendratama</span>
+                            </div>
+                            <div className="card-field">
+                                <span className="field-label">Designation</span>
+                                <span className="field-value title">Software Engineer</span>
+                            </div>
+                            <div className="card-field">
+                                <span className="field-label">ID Number</span>
+                                <span className="field-value small">SMT-20251002</span>
+                            </div>
                         </div>
                     </div>
+                    <div className="card-footer">
+                        <div className="card-flip-info">
+                            <span>⟳</span> FLIP FOR DETAILS
+                        </div>
+                        <div className="card-signature">Steven M.T.</div>
+                    </div>
                 </motion.div>
-                {/* Card Back */}
                 <motion.div
                     className="card-back"
                     initial={{ rotateY: -180 }}
@@ -115,7 +106,7 @@ const IdCard = ({ onClose, dragConstraints }: { onClose?: () => void, dragConstr
                         <div className="card-mag-strip" />
                     </div>
                     <div className="card-content-back">
-                        <p>This card grants access to Level-1 contact information. For further inquiries, please use the provided channels.</p>
+                        <p>This identification card is the property of Mulatama Corp. If found, please return to the nearest company office.</p>
                         <div className="card-contact-grid">
                             <a onClick={e => e.stopPropagation()} href={`mailto:${email}`}>
                                 <span>EMAIL</span>
@@ -126,9 +117,7 @@ const IdCard = ({ onClose, dragConstraints }: { onClose?: () => void, dragConstr
                                 <div>+{whatsappNumber}</div>
                             </a>
                         </div>
-                        <div className="card-location">
-                           <span>LOCATION:</span> TANGERANG, INDONESIA
-                        </div>
+                        <div className="card-barcode" />
                     </div>
                 </motion.div>
             </div>
@@ -274,13 +263,15 @@ const ControlPad = ({ isPreview = false, dragConstraints, isPoweredOn, togglePow
 
 const ProfileIcon = ({ onClick }: { onClick: () => void }) => {
     return (
-        <button className="profile-icon" onClick={onClick}>
-            <div className="face">
-                <div className="eye left"></div>
-                <div className="eye right"></div>
-                <div className="mouth"></div>
-            </div>
-        </button>
+        <div className="smiley-reveal-wrapper">
+            <button className="profile-icon" onClick={onClick}>
+                <div className="face">
+                    <div className="eye left"></div>
+                    <div className="eye right"></div>
+                    <div className="mouth"></div>
+                </div>
+            </button>
+        </div>
     )
 };
 
@@ -315,7 +306,6 @@ const GuidePopup = ({ onClose }: { onClose: () => void }) => {
     );
 };
 
-// --- MAIN PAGE COMPONENT ---
 export default function HomePage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isPoweredOn, setIsPoweredOn] = useState(false);
@@ -343,6 +333,11 @@ export default function HomePage() {
         if (section === 'CERTIFICATES') return certificates;
         return [];
     }, [section]);
+
+    useEffect(() => {
+        const timer = setTimeout(() => setIsLoading(false), 2800);
+        return () => clearTimeout(timer);
+    }, []);
 
     useEffect(() => {
         const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -465,15 +460,33 @@ export default function HomePage() {
 
     return (
         <main className="main-container" ref={mainContainerRef} onMouseMove={handleMouseMove}>
-            <AnimatePresence>{isLoading && <TextLoadingScreen onComplete={() => setIsLoading(false)} />}</AnimatePresence>
             <AnimatePresence>{!isMobile && windows.map(w => <DraggableWindow key={w.id} windowData={w} onClose={closeWindow} />)}</AnimatePresence>
 
+            <div className={`profile-icon-wrapper ${isLoading ? 'loading' : 'loaded'}`}>
+                <ProfileIcon onClick={!isLoading ? () => setIsGuideVisible(p => !p) : () => {}} />
+                <AnimatePresence>
+                    {!isLoading && (
+                        <motion.div
+                            className="profile-text-container"
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.5, delay: 1.5 }}
+                        >
+                            <h1 className="profile-title">STEVEN MULYA T.</h1>
+                            <p className="profile-subtitle">PORTFOLIO</p>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+
+            <AnimatePresence>
             {!isLoading && (
-                <>
-                    <div className="top-left-controls">
-                        <ProfileIcon onClick={() => setIsGuideVisible(p => !p)} />
-                    </div>
-                    {/* === PERUBAHAN DI SINI === */}
+                <motion.div 
+                    className="main-content-wrapper"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.8, delay: 0.2 }}
+                >
                     <div className="top-right-controls">
                         <InventoryBagIcon onToggle={() => setIsInventoryOpen(prev => !prev)} isOpen={isInventoryOpen} />
                     </div>
@@ -511,8 +524,9 @@ export default function HomePage() {
                     <AnimatePresence>
                         {isMobile && mobileDetailItem && <MobileDetailView item={mobileDetailItem} onClose={() => setMobileDetailItem(null)} />}
                     </AnimatePresence>
-                </>
+                </motion.div>
             )}
+            </AnimatePresence>
         </main>
     );
 }
