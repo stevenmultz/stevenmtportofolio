@@ -1,25 +1,38 @@
-'use client';
+// app/hooks/useSound.ts
 
-import { useEffect, useRef } from 'react';
+import { useMemo, useCallback } from 'react';
 
-export const useSound = (src: string, volume: number = 1.0) => {
-    const audioRef = useRef<HTMLAudioElement | null>(null);
+// 🔄 Hook diperbarui untuk menerima 'options' object (volume, loop)
+export const useSound = (
+  url: string,
+  options: { volume?: number; loop?: boolean } = {}
+) => {
+  const { volume = 1, loop = false } = options;
 
-    useEffect(() => {
-        // Cek ini memastikan audio hanya dibuat di sisi klien (browser)
-        if (typeof window !== 'undefined') {
-            const audio = new Audio(src);
-            audio.volume = volume;
-            audioRef.current = audio;
-        }
-    }, [src, volume]);
+  const audio = useMemo(() => {
+    // Pastikan kode ini hanya berjalan di sisi client
+    if (typeof window === 'undefined') {
+      return null;
+    }
+    const audioInstance = new Audio(url);
+    audioInstance.volume = volume;
+    audioInstance.loop = loop;
+    return audioInstance;
+  }, [url, volume, loop]);
 
-    const playSound = () => {
-        if (audioRef.current) {
-            audioRef.current.currentTime = 0; // Mulai dari awal setiap kali
-            audioRef.current.play().catch(error => console.error("Audio play failed:", error));
-        }
-    };
+  const play = useCallback(() => {
+    if (audio) {
+      audio.currentTime = 0;
+      audio.play().catch(e => console.error("Audio play failed:", e));
+    }
+  }, [audio]);
 
-    return playSound;
+  const stop = useCallback(() => {
+    if (audio) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+  }, [audio]);
+
+  return { play, stop };
 };

@@ -53,7 +53,7 @@ export const projects: Project[] = [
     description: "A corporate website for Hutama Maju Sukses, a leading manufacturing company. The project focus was on presenting their services and product portfolio professionally and informatively.",
     skills: ["Laravel", "React", "MySQL", "XAMPP"],
     links: [{ label: "Live Site", url: "#" }],
-    images: ["/programming.png", "/ntt.jpg", "/webresponsive.jpg"]
+    images: ["/hms.png", "/hms1.png"]
   },
 ];
 
