@@ -16,35 +16,7 @@ const whatsappLink = whatsappNumber ? `https://wa.me/${whatsappNumber}` : '';
 const isProject = (item: Project | Certificate | null): item is Project => !!item && 'skills' in item;
 const isCertificate = (item: Project | Certificate | null): item is Certificate => !!item && 'imageUrl' in item;
 
-interface Window { id: string; title: string; type: 'INFO' | 'IMAGE'; content: Project | Certificate | string; initialPos: { x: number; y: number }; }
 type ActiveItemType = 'controller' | 'namecard' | 'coverletter' | null;
-
-const DraggableWindow = ({ windowData, onClose }: { windowData: Window, onClose: (id: string) => void }) => {
-    const dragControls = useDragControls();
-    const renderContent = () => {
-        if (windowData.type === 'IMAGE' && typeof windowData.content === 'string') {
-            return <Image src={windowData.content} alt={windowData.title} layout="fill" objectFit="contain" className="window-image-content" />;
-        }
-        if (windowData.type === 'INFO') {
-            if (isProject(windowData.content as Project)) {
-                const p = windowData.content as Project;
-                return <pre className="window-text-content">{`TITLE: ${p.title}\nYEAR: ${p.year}\nTYPE: ${p.type}\n\nDESC:\n${p.description}\n\nSKILLS: ${p.skills.join(', ')}`}</pre>;
-            }
-            if (isCertificate(windowData.content as Certificate)) {
-                const c = windowData.content as Certificate;
-                return <pre className="window-text-content">{`CERT: ${c.name}\nFROM: ${c.institution}\nYEAR: ${c.year}`}</pre>;
-            }
-        } return null;
-    };
-    return (
-        <motion.div className="window-container" drag dragListener={false} dragControls={dragControls} dragMomentum={false}
-            initial={{ x: windowData.initialPos.x, y: windowData.initialPos.y, opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} transition={{ type: 'spring', stiffness: 400, damping: 30 }}>
-            <div className="window-title-bar" onPointerDown={(e) => dragControls.start(e)}><div className="window-title">{windowData.title}</div><button onClick={() => onClose(windowData.id)} className="window-close-button">[x]</button></div>
-            <div className="window-main-content">{renderContent()}</div>
-        </motion.div>
-    );
-};
 
 const IdCard = ({ onClose, dragConstraints }: { onClose?: () => void, dragConstraints?: React.RefObject<HTMLElement | null> }) => {
     const [isFlipped, setIsFlipped] = useState(false);
@@ -132,20 +104,16 @@ const CoverLetterView = ({ onClose }: { onClose?: () => void }) => (
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
     >
-        <div className="cover-letter-header">
-            <h3>MESSAGE.txt</h3>
-            {onClose && <button onClick={onClose} className="cover-letter-close-button">[X]</button>}
+        <div className="window-title-bar">
+            <div className="window-title">MESSAGE.txt</div>
+            {onClose && <button onClick={onClose} className="window-close-button">[x]</button>}
         </div>
         <div className="cover-letter-content">
-            <p>
-                Hello,
-            </p>
-            <p>
-                I am a passionate software engineer specializing in modern web technologies. My portfolio showcases my dedication to building clean, efficient, and user-friendly applications.
-            </p>
-            <p>
+            <pre>
+                Hello,{"\n\n"}
+                I am a passionate software engineer specializing in modern web technologies. My portfolio showcases my dedication to building clean, efficient, and user-friendly applications.{"\n\n"}
                 I'm currently seeking new opportunities and would be thrilled to discuss how my skills can bring value to your team.
-            </p>
+            </pre>
             <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="contact-button">
                 Let's Talk
             </a>
@@ -153,7 +121,7 @@ const CoverLetterView = ({ onClose }: { onClose?: () => void }) => (
     </motion.div>
 );
 
-const InventoryBagIcon = ({ onToggle, isOpen }: { onToggle: () => void, isOpen: boolean }) => (
+const InventoryBagIcon = ({ onToggle }: { onToggle: () => void }) => (
     <button className="inventory-bag-icon" onClick={onToggle}>
         [INVENTORY]
     </button>
@@ -172,27 +140,9 @@ const InventoryPanel = ({ activeItem, onSelect }: { activeItem: ActiveItemType, 
     </motion.div>
 );
 
-const ItemPreview = ({ item, onAnimationComplete }: { item: ActiveItemType, onAnimationComplete: () => void }) => {
-    if (!item) return null;
-    return (
-        <motion.div className="item-preview-overlay">
-            <motion.div
-                className="item-preview-content"
-                initial={{ scale: 0, rotateY: 0 }}
-                animate={{ scale: 1, rotateY: 360 }}
-                exit={{ scale: 0, opacity: 0 }}
-                transition={{ duration: 0.7, ease: "circOut" }}
-                onAnimationComplete={onAnimationComplete}
-            >
-                {item === 'controller' ? <ControlPad isPreview /> : <IdCard />}
-            </motion.div>
-        </motion.div>
-    );
-};
-
 const MobileDetailView = ({ item, onClose }: { item: Project | Certificate, onClose: () => void }) => {
     return (
-        <motion.div className="mobile-detail-view" initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ ease: 'circOut' }}>
+        <motion.div className="mobile-detail-view" initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
             <div className="mobile-detail-header">
                 <button onClick={onClose} className="mobile-close-button">← BACK</button>
             </div>
@@ -213,7 +163,7 @@ const MobileDetailView = ({ item, onClose }: { item: Project | Certificate, onCl
                         </div>
                         <div className="mobile-detail-section">
                             <h3 className="mobile-detail-section-title">TECH STACK</h3>
-                            <div className="mobile-skills-container">
+                            <div className="skills-container">
                                 {item.skills.map(skill => <span key={skill} className="skill-tag">{skill}</span>)}
                             </div>
                         </div>
@@ -263,15 +213,13 @@ const ControlPad = ({ isPreview = false, dragConstraints, isPoweredOn, togglePow
 
 const ProfileIcon = ({ onClick }: { onClick: () => void }) => {
     return (
-        <div className="smiley-reveal-wrapper">
-            <button className="profile-icon" onClick={onClick}>
-                <div className="face">
-                    <div className="eye left"></div>
-                    <div className="eye right"></div>
-                    <div className="mouth"></div>
-                </div>
-            </button>
-        </div>
+        <button className="profile-icon" onClick={onClick}>
+            <div className="face">
+                <div className="eye left"></div>
+                <div className="eye right"></div>
+                <div className="mouth"></div>
+            </div>
+        </button>
     )
 };
 
@@ -306,19 +254,104 @@ const GuidePopup = ({ onClose }: { onClose: () => void }) => {
     );
 };
 
+const PreviewPanel = ({ imageUrl }: { imageUrl: string }) => (
+    <motion.div
+      className="preview-panel"
+      key={imageUrl}
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <Image src={imageUrl} alt="Preview" width={400} height={400} style={{ width: '100%', height: 'auto', objectFit: 'contain' }} />
+    </motion.div>
+);
+
+const FullscreenView = ({ item, onClose }: { item: Project | Certificate, onClose: () => void }) => {
+    return (
+        <motion.div 
+            className="fullscreen-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+        >
+            <motion.div 
+                className="fullscreen-content"
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+            >
+                <div className="fullscreen-header">
+                    <h2 className="fullscreen-title">{isProject(item) ? item.title : item.name}</h2>
+                    <button onClick={onClose} className="window-close-button">[x]</button>
+                </div>
+                <div className="fullscreen-body">
+                    {isProject(item) ? (
+                        <>
+                            <div className="fullscreen-info-panel">
+                                <div className="fullscreen-section">
+                                    <h3>DESCRIPTION</h3>
+                                    <p>{item.description}</p>
+                                </div>
+                                <div className="fullscreen-section">
+                                    <h3>DETAILS</h3>
+                                    <div className="details-grid">
+                                        <span>YEAR</span><span>{item.year}</span>
+                                        <span>TYPE</span><span>{item.type}</span>
+                                        <span>STATUS</span><span>{item.status}</span>
+                                    </div>
+                                </div>
+                                <div className="fullscreen-section">
+                                    <h3>TECH STACK</h3>
+                                    <div className="skills-container">
+                                        {item.skills.map(skill => <span key={skill} className="skill-tag">{skill}</span>)}
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="fullscreen-gallery-panel">
+                                <h3>GALLERY</h3>
+                                <div className="gallery-grid">
+                                    {item.images.map(img => <Image key={img} src={img} width={400} height={250} alt="Project image" className="gallery-image" />)}
+                                </div>
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                           <div className="fullscreen-info-panel">
+                                <div className="fullscreen-section">
+                                    <h3>DETAILS</h3>
+                                    <div className="details-grid">
+                                        <span>ISSUER</span><span>{item.institution}</span>
+                                        <span>YEAR</span><span>{item.year}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="fullscreen-gallery-panel">
+                                <h3>CERTIFICATE</h3>
+                                <Image src={item.imageUrl} width={800} height={550} alt="Certificate image" className="gallery-image" />
+                            </div>
+                        </>
+                    )}
+                </div>
+            </motion.div>
+        </motion.div>
+    );
+};
+
 export default function HomePage() {
-    const [isLoading, setIsLoading] = useState(true);
+    const [isAnimating, setIsAnimating] = useState(true);
     const [isPoweredOn, setIsPoweredOn] = useState(false);
     const [isBooting, setIsBooting] = useState(false);
     const [section, setSection] = useState<'MENU' | 'PROJECTS' | 'CERTIFICATES'>('MENU');
     const [listIndex, setListIndex] = useState(0);
     const [isMobile, setIsMobile] = useState(false);
-    const [windows, setWindows] = useState<Window[]>([]);
     const [activeItem, setActiveItem] = useState<ActiveItemType>(null);
-    const [previewItem, setPreviewItem] = useState<ActiveItemType>(null);
     const [mobileDetailItem, setMobileDetailItem] = useState<Project | Certificate | null>(null);
     const [isInventoryOpen, setIsInventoryOpen] = useState(false);
     const [isGuideVisible, setIsGuideVisible] = useState(false);
+    const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
+    const [fullscreenItem, setFullscreenItem] = useState<Project | Certificate | null>(null);
 
     const mainContainerRef = useRef<HTMLDivElement>(null);
     const screenContentRef = useRef<HTMLDivElement>(null);
@@ -326,6 +359,7 @@ export default function HomePage() {
     const playNav = useSound('/map.mp3', 0.5); const playSelect = useSound('/map.mp3', 0.8);
     const playBack = useSound('/map.mp3', 0.6); const playPowerOn = useSound('/map.mp3', 1);
     const playPowerOff = useSound('/map.mp3', 1);
+    const playPowerOnPC = useSound('/pcsound.wav', 0.5);
 
     const menuItems = useMemo(() => ['PROJECTS', 'CERTIFICATES'], []);
     const dataList = useMemo(() => {
@@ -334,16 +368,36 @@ export default function HomePage() {
         return [];
     }, [section]);
 
-    useEffect(() => {
-        const timer = setTimeout(() => setIsLoading(false), 2800);
-        return () => clearTimeout(timer);
-    }, []);
+    const iconWrapperVariants: Variants = {
+        initial: { top: "50%", left: "50%", x: "-50%", y: "-50%", scale: 1.5 },
+        animate: { top: "1rem", left: "1rem", x: "0%", y: "0%", scale: 1, transition: { delay: 2.7, duration: 1.5, ease: [0.16, 1, 0.3, 1] } }
+    };
+    
+    const iconRevealVariants: Variants = {
+        initial: { clipPath: "inset(100% 0% 0% 0%)" },
+        animate: { clipPath: "inset(0% 0% 0% 0%)", transition: { duration: 2.5, ease: [0.22, 1, 0.36, 1] } }
+    };
 
     useEffect(() => {
         const checkMobile = () => setIsMobile(window.innerWidth < 768);
         checkMobile(); window.addEventListener('resize', checkMobile);
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
+
+    useEffect(() => {
+        if (!isMobile && isPoweredOn && (section === 'PROJECTS' || section === 'CERTIFICATES')) {
+          const currentItem = dataList[listIndex];
+          if (isProject(currentItem) && currentItem.images.length > 0) {
+            setPreviewImageUrl(currentItem.images[0]);
+          } else if (isCertificate(currentItem)) {
+            setPreviewImageUrl(currentItem.imageUrl);
+          } else {
+            setPreviewImageUrl(null);
+          }
+        } else {
+          setPreviewImageUrl(null);
+        }
+    }, [listIndex, section, isMobile, isPoweredOn, dataList]);
 
     useEffect(() => {
         if (section === 'MENU' || isBooting) return;
@@ -355,26 +409,12 @@ export default function HomePage() {
 
     const handleInventorySelect = (item: 'controller' | 'namecard' | 'coverletter') => {
         const toggleOff = activeItem === item;
-        if (isMobile) {
-            setActiveItem(toggleOff ? null : item);
-        } else if (item === 'coverletter') {
-            setActiveItem(toggleOff ? null : item);
-        } else {
-            setActiveItem(null);
-            if (!toggleOff) {
-                setPreviewItem(item);
-            }
-        }
+        setActiveItem(toggleOff ? null : item);
         setIsInventoryOpen(false);
     };
 
-    const handlePreviewAnimationComplete = () => {
-        setActiveItem(previewItem);
-        setPreviewItem(null);
-    };
-
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        if (isMobile || isLoading) return;
+        if (isMobile || isAnimating) return;
         const { clientX, clientY } = e;
         const { offsetWidth, offsetHeight } = mainContainerRef.current!;
         const y = (clientX - offsetWidth / 2) / offsetWidth * 25;
@@ -383,17 +423,21 @@ export default function HomePage() {
         animate(rotateX, x, { type: 'spring', stiffness: 200, damping: 20 });
     };
 
-    const closeWindow = (id: string) => { setWindows(prev => prev.filter(w => w.id !== id)); };
-
     const togglePower = useCallback(() => {
-        if (isLoading) return;
+        if (isAnimating) return;
         setIsPoweredOn(prev => {
             const newState = !prev;
-            if (newState) { playPowerOn(); setIsBooting(true); }
-            else { playPowerOff(); setSection('MENU'); setWindows([]); }
+            if (newState) {
+                playPowerOn();
+                playPowerOnPC();
+                setIsBooting(true);
+            } else {
+                playPowerOff();
+                setSection('MENU');
+            }
             return newState;
         });
-    }, [isLoading, playPowerOn, playPowerOff]);
+    }, [isAnimating, playPowerOn, playPowerOff, playPowerOnPC]);
 
     const handleNavigation = useCallback((direction: 'UP' | 'DOWN' | 'LEFT' | 'RIGHT') => {
         if (!isPoweredOn || isBooting) return; playNav();
@@ -417,27 +461,21 @@ export default function HomePage() {
                 if (isMobile) {
                     setMobileDetailItem(item);
                 } else {
-                    const newWindows: Window[] = [];
-                    newWindows.push({ id: isProject(item) ? item.title : item.name, title: 'INFO.TXT', type: 'INFO', content: item, initialPos: { x: window.innerWidth * 0.05, y: window.innerHeight * 0.1 } });
-                    if (isProject(item) && item.images) {
-                        item.images.forEach((img, i) => newWindows.push({ id: `${item.title}-img-${i}`, title: `IMG_0${i + 1}.JPG`, type: 'IMAGE', content: img, initialPos: { x: window.innerWidth * (0.55 + i * 0.05), y: window.innerHeight * (0.12 + i * 0.05) } }));
-                    } else if (isCertificate(item)) {
-                        newWindows.push({ id: `${item.name}-img`, title: 'PROOF.JPG', type: 'IMAGE', content: item.imageUrl, initialPos: { x: window.innerWidth * 0.55, y: window.innerHeight * 0.12 } });
-                    }
-                    setWindows(newWindows);
+                    setFullscreenItem(item);
+                    setPreviewImageUrl(null);
                 }
             }
         } else if (action === 'BACK') {
             playBack();
-            if (isMobile && mobileDetailItem) {
+            if (fullscreenItem) {
+                setFullscreenItem(null);
+            } else if (isMobile && mobileDetailItem) {
                 setMobileDetailItem(null);
-            } else if (windows.length > 0) {
-                setWindows([]);
             } else if (section !== 'MENU') {
                 setSection('MENU');
             }
         }
-    }, [isPoweredOn, isBooting, playSelect, playBack, section, menuItems, listIndex, dataList, windows, isMobile, mobileDetailItem]);
+    }, [isPoweredOn, isBooting, playSelect, playBack, section, menuItems, listIndex, dataList, isMobile, mobileDetailItem, fullscreenItem]);
 
     useEffect(() => { if (isBooting) { const timer = setTimeout(() => setIsBooting(false), 1200); return () => clearTimeout(timer); } }, [isBooting]);
     useEffect(() => { setListIndex(0); }, [section]);
@@ -457,38 +495,53 @@ export default function HomePage() {
             </div>
         );
     };
+    
+    const desktopLayoutClass = useMemo(() => {
+        if(isMobile) return '';
+        if(section === 'PROJECTS') return 'projects-view';
+        if(section === 'CERTIFICATES') return 'certificates-view';
+        return 'menu-view';
+    }, [isMobile, section]);
 
     return (
-        <main className="main-container" ref={mainContainerRef} onMouseMove={handleMouseMove}>
-            <AnimatePresence>{!isMobile && windows.map(w => <DraggableWindow key={w.id} windowData={w} onClose={closeWindow} />)}</AnimatePresence>
-
-            <div className={`profile-icon-wrapper ${isLoading ? 'loading' : 'loaded'}`}>
-                <ProfileIcon onClick={!isLoading ? () => setIsGuideVisible(p => !p) : () => {}} />
+        <>
+            <motion.div
+                className="profile-icon-wrapper"
+                variants={iconWrapperVariants}
+                initial="initial"
+                animate="animate"
+                onAnimationComplete={() => setIsAnimating(false)}
+            >
+                <motion.div variants={iconRevealVariants}>
+                    <ProfileIcon onClick={!isAnimating ? () => setIsGuideVisible(p => !p) : () => {}} />
+                </motion.div>
                 <AnimatePresence>
-                    {!isLoading && (
+                    {!isAnimating && (
                         <motion.div
                             className="profile-text-container"
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.5, delay: 1.5 }}
+                            transition={{ duration: 0.5, delay: 0.2 }}
                         >
                             <h1 className="profile-title">STEVEN MULYA T.</h1>
                             <p className="profile-subtitle">PORTFOLIO</p>
                         </motion.div>
                     )}
                 </AnimatePresence>
-            </div>
+            </motion.div>
 
             <AnimatePresence>
-            {!isLoading && (
-                <motion.div 
-                    className="main-content-wrapper"
+            {!isAnimating && (
+                <motion.main
+                    className="main-container"
+                    ref={mainContainerRef}
+                    onMouseMove={handleMouseMove}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ duration: 0.8, delay: 0.2 }}
+                    transition={{ duration: 0.8 }}
                 >
                     <div className="top-right-controls">
-                        <InventoryBagIcon onToggle={() => setIsInventoryOpen(prev => !prev)} isOpen={isInventoryOpen} />
+                        <InventoryBagIcon onToggle={() => setIsInventoryOpen(prev => !prev)} />
                     </div>
                     
                     <AnimatePresence>
@@ -505,28 +558,33 @@ export default function HomePage() {
                         )}
                     </AnimatePresence>
 
-                    <CssCrtMonitor style={{ rotateX, rotateY }}>
-                        {isPoweredOn ? <TerminalHUD>{renderScreenContent()}</TerminalHUD> : <div className="screen-off-overlay" />}
-                    </CssCrtMonitor>
-
-                    {!isMobile && (
+                    <div className={`desktop-layout-container ${desktopLayoutClass}`}>
+                        <CssCrtMonitor style={{ rotateX, rotateY }}>
+                            {isPoweredOn ? <TerminalHUD>{renderScreenContent()}</TerminalHUD> : <div className="screen-off-overlay" />}
+                        </CssCrtMonitor>
+                        
                         <AnimatePresence>
-                            {previewItem && <ItemPreview item={previewItem} onAnimationComplete={handlePreviewAnimationComplete} />}
+                            {previewImageUrl && <PreviewPanel imageUrl={previewImageUrl} />}
                         </AnimatePresence>
-                    )}
+                    </div>
 
                     <AnimatePresence>
                         {activeItem === 'controller' && <ControlPad dragConstraints={mainContainerRef} isPoweredOn={isPoweredOn} togglePower={togglePower} handleNavigation={handleNavigation} handleAction={handleAction} />}
                         {activeItem === 'namecard' && <IdCard onClose={() => setActiveItem(null)} dragConstraints={mainContainerRef} />}
                         {activeItem === 'coverletter' && <CoverLetterView onClose={() => setActiveItem(null)} />}
                     </AnimatePresence>
-
+                    
                     <AnimatePresence>
                         {isMobile && mobileDetailItem && <MobileDetailView item={mobileDetailItem} onClose={() => setMobileDetailItem(null)} />}
                     </AnimatePresence>
-                </motion.div>
+
+                </motion.main>
             )}
             </AnimatePresence>
-        </main>
+            
+            <AnimatePresence>
+                {fullscreenItem && <FullscreenView item={fullscreenItem} onClose={() => setFullscreenItem(null)} />}
+            </AnimatePresence>
+        </>
     );
 }
