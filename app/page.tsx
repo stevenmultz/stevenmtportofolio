@@ -3,10 +3,11 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback, ReactNode } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence, useMotionValue, animate } from 'framer-motion';
-import { projects, certificates, contactDetails, Project, Certificate } from '@/app/data/portfolioData';
-import { useSound } from '@/app/hooks/useSound';
-import TerminalHUD from '@/app/components/TerminalHUD';
+import { projects, certificates, contactDetails, Project, Certificate } from '@/app/data/portfolioData'; // Pastikan path ini benar
+import { useSound } from '@/app/hooks/useSound'; // Pastikan path ini benar
+import TerminalHUD from '@/app/components/TerminalHUD'; // Pastikan path ini benar
 
+// --- Helper & Data Extraction ---
 const emailMatch = contactDetails.match(/Email: (.*)/);
 const whatsappMatch = contactDetails.match(/Whatsapp: \+([0-9]+)/);
 const email = emailMatch ? emailMatch[1].trim() : '';
@@ -17,6 +18,8 @@ const isProject = (item: Project | Certificate | null): item is Project => !!ite
 const isCertificate = (item: Project | Certificate | null): item is Certificate => !!item && 'imageUrl' in item;
 
 type ActiveItemType = 'controller' | 'namecard' | 'coverletter' | null;
+
+// --- Components ---
 
 const InitializationLoader = ({ onComplete }: { onComplete: () => void }) => {
     const [progress, setProgress] = useState(0);
@@ -260,9 +263,49 @@ const GuidePopup = ({ onClose, playPip }: { onClose: () => void; playPip: () => 
     useEffect(() => { setText(""); let i = 0; const typing = setInterval(() => { if (i < fullText.length) { setText(prev => prev + fullText.charAt(i)); i++; } else { clearInterval(typing); } }, 40); return () => clearInterval(typing); }, []);
     return (<motion.div className="guide-popup" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}><button onClick={() => { playPip(); onClose(); }} className="guide-close-button">[X]</button><p>{text}<span className="blinking-cursor">_</span></p></motion.div>);
 };
+
 const FullscreenView = ({ item, onClose }: { item: Project | Certificate, onClose: () => void }) => {
-    return (<motion.div className="fullscreen-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><motion.div className="dossier-container" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} transition={{ duration: 0.3 }}><div className="dossier-header"><div className="dossier-tab">{isProject(item) ? 'PROJECT FILE' : 'CERTIFICATE'}</div><h2 className="dossier-title">{isProject(item) ? item.title : item.name}</h2><button onClick={onClose} className="dossier-close-button">[ CLOSE ]</button></div>{isProject(item) ? (<div className="dossier-body project"><div className="dossier-section"><h3>I. OVERVIEW</h3><p>{item.description}</p></div><div className="dossier-section"><h3>II. TECHNICAL SPECIFICATIONS</h3><div className="skills-container">{item.skills.map(skill => <span key={skill} className="skill-tag">{skill}</span>)}</div></div><div className="dossier-section"><h3>III. FILE DETAILS</h3><div className="details-grid"><span>YEAR</span><span>{item.year}</span><span>TYPE</span><span>{item.type}</span><span>STATUS</span><span>{item.status}</span></div></div><div className="dossier-section"><h3>IV. EVIDENCE</h3><div className="dossier-gallery">{item.images.map(img => (<div key={img} className="gallery-item"><Image src={img} width={400} height={250} alt="Project image" className="gallery-image" /></div>))}</div></div></div>) : (<div className="dossier-body certificate"><div className="dossier-section"><h3>ISSUER DETAILS</h3><div className="details-grid"><span>INSTITUTION</span><span>{item.institution}</span><span>YEAR</span><span>{item.year}</span></div></div><div className="dossier-section"><h3>PROOF OF COMPLETION</h3><div className="certificate-image-container"><Image src={item.imageUrl} width={800} height={550} alt="Certificate image" className="gallery-image" /></div></div></div>)}</motion.div></motion.div>);
+    return (
+        <motion.div className="fullscreen-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <motion.div className="dossier-container" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} transition={{ duration: 0.3 }}>
+                <div className="dossier-header">
+                    <div className="dossier-tab">{isProject(item) ? 'PROJECT FILE' : 'CERTIFICATE'}</div>
+                    <h2 className="dossier-title">{isProject(item) ? item.title : item.name}</h2>
+                    <div className="dossier-header-actions">
+                        {isProject(item) && item.links && item.links[0] && (
+                            <a 
+                                href={item.links[0].url} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="dossier-action-button"
+                                onClick={(e) => e.stopPropagation()} 
+                            >
+                                [ VIEW SITE ]
+                            </a>
+                        )}
+                        <button onClick={onClose} className="dossier-close-button">[ CLOSE ]</button>
+                    </div>
+                </div>
+                {isProject(item) ? (
+                    <div className="dossier-body project">
+                        <div className="dossier-section"><h3>I. OVERVIEW</h3><p>{item.description}</p></div>
+                        <div className="dossier-section"><h3>II. TECHNICAL SPECIFICATIONS</h3><div className="skills-container">{item.skills.map(skill => <span key={skill} className="skill-tag">{skill}</span>)}</div></div>
+                        <div className="dossier-section"><h3>III. FILE DETAILS</h3><div className="details-grid"><span>YEAR</span><span>{item.year}</span><span>TYPE</span><span>{item.type}</span><span>STATUS</span><span>{item.status}</span></div></div>
+                        <div className="dossier-section"><h3>IV. EVIDENCE</h3><div className="dossier-gallery">{item.images.map(img => (<div key={img} className="gallery-item"><Image src={img} width={400} height={250} alt="Project image" className="gallery-image" /></div>))}</div></div>
+                    </div>
+                ) : (
+                    <div className="dossier-body certificate">
+                        <div className="dossier-section"><h3>ISSUER DETAILS</h3><div className="details-grid"><span>INSTITUTION</span><span>{item.institution}</span><span>YEAR</span><span>{item.year}</span></div></div>
+                        <div className="dossier-section"><h3>PROOF OF COMPLETION</h3><div className="certificate-image-container"><Image src={item.imageUrl} width={800} height={550} alt="Certificate image" className="gallery-image" /></div></div>
+                    </div>
+                )}
+            </motion.div>
+        </motion.div>
+    );
 };
+
+
+// --- Main Page Component ---
 
 export default function HomePage() {
     const [isInitializing, setIsInitializing] = useState(true);
@@ -384,18 +427,101 @@ export default function HomePage() {
     useEffect(() => { if (isBooting) { const timer = setTimeout(() => setIsBooting(false), 1200); return () => clearTimeout(timer); } }, [isBooting]);
     useEffect(() => { setListIndex(0); }, [section]);
 
+    // ====================================================================
+    // ===== 🚀 FUNGSI RENDER SCREENCONTENT YANG TELAH DIPERBARUI 🚀 =====
+    // ====================================================================
     const renderScreenContent = () => {
-        if (isBooting) { return (<div className="boot-screen">BOOTING SMT-OS...</div>); }
-        const list = section === 'MENU' ? menuItems : dataList;
+        if (isBooting) { 
+            return (<div className="boot-screen">BOOTING SMT-OS...</div>); 
+        }
+        
+        // Tampilan MENU utama tetap simpel
+        if (section === 'MENU') {
+            return (
+                <div className="screen-content" ref={screenContentRef}>
+                    <h2 className="mb-4">// DIR: {section}</h2>
+                    <div>
+                        {menuItems.map((item, index) => (
+                            <p key={item} id={`item-${index}`} className={`truncate ${index === listIndex ? 'selected-item' : ''}`}>
+                                {listIndex === index ? '> ' : '  '}{item}
+                            </p>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        const list = dataList;
+
+        // Tampilan untuk MOBILE: Daftar simpel satu kolom
+        if (isMobile) {
+            return (
+                <div className="screen-content" ref={screenContentRef}>
+                    <h2 className="mb-4">// DIR: {section}</h2>
+                    <div>
+                        {list.map((item, index) => {
+                            const itemName = isProject(item) ? item.title : item.name;
+                            const itemType = isProject(item) ? item.type : item.institution;
+                            return (
+                                <div key={itemName + index} id={`item-${index}`} className={`p-1 ${index === listIndex ? 'selected-item' : ''}`}>
+                                    <p className="truncate">
+                                        {listIndex === index ? '> ' : '  '}{itemName}
+                                    </p>
+                                    <p className="opacity-60 text-sm pl-4 truncate">
+                                      - {itemType}
+                                    </p>
+                                </div>
+                            )
+                        })}
+                    </div>
+                </div>
+            );
+        }
+
+        // Tampilan untuk DESKTOP: Tabel ASCII Dinamis
+        const headers = isProject(list[0]) 
+            ? ['TITLE', 'TYPE', 'YEAR'] 
+            : ['CERTIFICATE', 'INSTITUTION', 'YEAR'];
+
+        // Hitung lebar maksimum untuk setiap kolom berdasarkan data + header
+        const colWidths = [
+            Math.max(headers[0].length, ...list.map(item => (isProject(item) ? item.title : item.name).length)) + 2,
+            Math.max(headers[1].length, ...list.map(item => (isProject(item) ? item.type : item.institution).length)) + 2,
+            Math.max(headers[2].length, ...list.map(item => item.year.length)) + 2,
+        ];
+        
+        // Helper untuk memotong dan memberi padding pada teks
+        const truncateAndPad = (str: string, length: number) => {
+            const truncated = str.length > length - 2 ? str.substring(0, length - 4) + '… ' : str;
+            return ` ${truncated.padEnd(length - 1)}`;
+        };
+
+        // Buat elemen tabel ASCII
+        const topBorder = `╔${'═'.repeat(colWidths[0])}╦${'═'.repeat(colWidths[1])}╦${'═'.repeat(colWidths[2])}╗`;
+        const headerRow = `║${truncateAndPad(headers[0], colWidths[0])}║${truncateAndPad(headers[1], colWidths[1])}║${truncateAndPad(headers[2], colWidths[2])}║`;
+        const separator = `╠${'═'.repeat(colWidths[0])}╬${'═'.repeat(colWidths[1])}╬${'═'.repeat(colWidths[2])}╣`;
+        const bottomBorder = `╚${'═'.repeat(colWidths[0])}╩${'═'.repeat(colWidths[1])}╩${'═'.repeat(colWidths[2])}╝`;
+
         return (
             <div className="screen-content" ref={screenContentRef}>
-                <h2 className="mb-4">// DIR: {section}</h2>
-                <div>
+                 <h2 className="mb-2">// DIR: {section}</h2>
+                 <pre className="text-sm leading-6">
+                    <div>{topBorder}</div>
+                    <div>{headerRow}</div>
+                    <div>{separator}</div>
                     {list.map((item, index) => {
-                        const itemName = typeof item === 'string' ? item : (isProject(item) ? item.title : item.name);
-                        return (<p key={itemName} id={`item-${index}`} className={`truncate ${index === listIndex ? 'selected-item' : ''}`}>{listIndex === index ? '> ' : '  '}{itemName}</p>);
+                        const col1 = isProject(item) ? item.title : item.name;
+                        const col2 = isProject(item) ? item.type : item.institution;
+                        const col3 = item.year;
+                        const row = `║${truncateAndPad(col1, colWidths[0])}║${truncateAndPad(col2, colWidths[1])}║${truncateAndPad(col3, colWidths[2])}║`;
+                        return (
+                            <div key={index} id={`item-${index}`} className={index === listIndex ? 'selected-item' : ''}>
+                                {row}
+                            </div>
+                        )
                     })}
-                </div>
+                    <div>{bottomBorder}</div>
+                </pre>
             </div>
         );
     };

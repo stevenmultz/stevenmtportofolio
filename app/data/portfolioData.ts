@@ -28,7 +28,7 @@ export const projects: Project[] = [
     uiUxDesigner: "Jeremy A",
     description: "Gohte Architects is a leading architecture studio focusing on sustainable design. This project involved creating a portfolio website to showcase their work with an interactive and modern visual gallery.",
     skills: ["React", "Next.js", "Tailwind CSS", "Framer Motion", "TypeScript"],
-    links: [{ label: "Gohte Website", url: "https://mulaworks.vercel.app/" }],
+    links: [{ label: "Gohte Website", url: "https://www.andrewgohte.com/" }],
     images: ["/gohte.png", "/gohte1.png", "/gohte2.png"]
   },
   {

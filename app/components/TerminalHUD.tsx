@@ -6,27 +6,27 @@ const getRandomInt = (min: number, max: number) => Math.floor(Math.random() * (m
 
 // --- Main HUD Component ---
 const TerminalHUD = ({ children }: { children: ReactNode }) => {
-    const [time, setTime] = useState(new Date());
-    const [stats, setStats] = useState({ cpu: 67, mem: 45, net: 1.2 });
+    const [time, setTime] = useState(new Date());
+    const [stats, setStats] = useState({ cpu: 67, mem: 45, net: 1.2 });
 
-    // Effect for clock and stats fluctuation
-    useEffect(() => {
-        const timer = setInterval(() => {
-            setTime(new Date());
-            setStats({
-                cpu: getRandomInt(40, 95),
-                mem: getRandomInt(30, 80),
+    // Effect untuk jam dan statistik
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setTime(new Date());
+            setStats({
+                cpu: getRandomInt(40, 95),
+                mem: getRandomInt(30, 80),
                 net: (Math.random() * 2 + 0.5),
-            });
-        }, 1500);
-        return () => clearInterval(timer);
-    }, []);
+            });
+        }, 1500);
+        return () => clearInterval(timer);
+    }, []);
 
-    const formattedTime = time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+    const formattedTime = time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
     const formattedDate = time.toLocaleDateString('en-GB', { year: '2-digit', month: '2-digit', day: '2-digit' });
 
-    return (
-        <div className="hud-container">
+    return (
+        <div className="hud-container">
             {/* Decorative Corners */}
             <div className="hud-corner top-left"></div>
             <div className="hud-corner top-right"></div>
@@ -34,28 +34,28 @@ const TerminalHUD = ({ children }: { children: ReactNode }) => {
             <div className="hud-corner bottom-right"></div>
             
             {/* Header */}
-            <div className="hud-header">
+            <header className="hud-header">
                 <span>SMT-OS [v5.4]</span>
                 <span className="rec-light">REC</span>
                 <span>{formattedDate}</span>
-            </div>
+            </header>
             
             {/* Main Content */}
-            <main className="hud-main-content">
-                {children}
-            </main>
+            <main className="hud-main-content">
+                {children}
+            </main>
             
             {/* Footer / Status Bar */}
-            <div className="hud-status-bar">
-                <span>CPU: {stats.cpu}%</span>
-                <span>MEM: {stats.mem}%</span>
+            <footer className="hud-status-bar">
+                <span>CPU: {stats.cpu}%</span>
+                <span>MEM: {stats.mem}%</span>
                 <span>NET: {stats.net.toFixed(1)}Gb/s</span>
                 <span className="status-ok">STATUS: OK</span>
-                <span className="flex-grow"></span>
+                <span style={{ flexGrow: 1 }}></span> {/* Spacer */}
                 <span>{formattedTime}</span>
-            </div>
-        </div>
-    );
+            </footer>
+        </div>
+    );
 };
 
 export default TerminalHUD;
